@@ -1103,7 +1103,10 @@ const D = {
   euroCalculado: false,     // salió de la cuenta, no de una fuente oficial
   euroAMano: false,         // alguien lo escribió: no se vuelve a pisar
 
-  ajustes: { tema: "auto", tasaPref: "oficial", moneda: "bs", efectivo: true,
+  /* Arranca en claro a propósito: el mostrador se ve de día y con luz
+     encima. Quien quiera noche lo cambia en Ajustes o con el botón de
+     arriba, y ahí sí se queda como lo dejó. */
+  ajustes: { tema: "light", tasaPref: "oficial", moneda: "bs", efectivo: true,
              letraPc: "mediana", letraTel: "pequena" },
 
   usuarios: [
@@ -1379,21 +1382,19 @@ function abrir(lista, nivel){
 
 const ROLES = {
   cajero: { nombre:"Cajero",
-    ve:"Vende en el mostrador, monta pedidos y cobra. No puede anular ni cerrar caja.",
+    ve:"Venta, Pedidos y Clientes. Es lo que se toca de cara al público.",
     permisos: Object.assign(nadaAbierto(),
-                            abrir(["venta","pedidos","clientes"], "todo"),
-                            abrir(["inventario","facturacion","ajustes"], "ver")) },
+                            abrir(["venta","pedidos","clientes"], "todo")) },
   despacho: { nombre:"Despacho",
-    ve:"Mueve existencia, entrega pedidos y consulta clientes. No cobra.",
+    ve:"Lo del cajero y además Inventario: entrega, mueve existencia y consulta.",
     permisos: Object.assign(nadaAbierto(),
-                            abrir(["pedidos","inventario"], "todo"),
-                            abrir(["clientes","facturacion","ajustes"], "ver")) },
+                            abrir(["venta","pedidos","inventario","clientes"], "todo")) },
   contador: { nombre:"Contador",
-    ve:"Entra a mirar y sacar cuentas: pedidos, facturación y cierre. No cambia nada.",
+    ve:"Entra a mirar y sacar cuentas, sin cambiar nada. No vende ni reparte permisos.",
     permisos: Object.assign(nadaAbierto(),
                             abrir(["pedidos","inventario","clientes","facturacion","cierre","ajustes"], "ver")) },
   duena: { nombre:"Dueña",
-    ve:"Todo: cobra, anula, cierra caja, reparte permisos y lee la bitácora.",
+    ve:"Todas las pantallas. La única que agrega usuarios y reparte permisos.",
     permisos: Object.assign(nadaAbierto(), abrir(MODULOS, "todo")) }
 };
 
@@ -1820,11 +1821,6 @@ function ofrecerInstalar(){
 }
 
 function vistaEntrar(){
-  /* Los usuarios de prueba salen de los mismos datos: si se agrega a
-     alguien en Usuarios, aquí aparece sin tocar nada. */
-  const prueba = D.usuarios.slice(0, 3).map(u =>
-    '<b style="font-family:var(--mono)">' + esc(u.usuario) + "</b>").join(", ");
-
   return '<div class="entrar"><div class="entrar__caja">' +
     barraNueva() +
     '<div class="entrar__logo">' + logoImg("2.5rem") + "</div>" +
@@ -1840,9 +1836,7 @@ function vistaEntrar(){
        débil o filtrada, que aquí no vienen a cuento. */
     '<input class="ent ent--lg" id="clave" type="password" placeholder="Cuatro números" ' +
       'autocomplete="off" data-lpignore="true" data-1p-ignore data-form-type="other">' +
-    (entrarError ? '<p class="campo__err">' + ic("alerta","ic--sm") + esc(entrarError) + "</p>"
-                 : '<p class="campo__ay">Para probar, entra con ' + prueba +
-                   '; la contraseña de todas es <b style="font-family:var(--mono)">1234</b>.</p>') +
+    (entrarError ? '<p class="campo__err">' + ic("alerta","ic--sm") + esc(entrarError) + "</p>" : "") +
     "</div>" +
     '<button class="btn btn--sol btn--lg btn--bloque" data-a="entrar">Entrar</button>' +
     '<p class="nota-pie centrado">Desde aquí, todo lo que hagas queda guardado con tu nombre.</p>' +
@@ -2994,7 +2988,9 @@ function ventActualizar(){
 
 /* ── Acerca del sistema ────────────────────────────────────────── */
 const CAMBIOS = [
-  { v:"1.0.5", f:"05/09/2026", t:"Cada rol entra solo a sus pantallas, y la dueña reparte los permisos uno por uno." },
+  { v:"1.0.5", f:"06/09/2026", t:"Cada rol entra solo a sus pantallas, y la dueña reparte los permisos uno por uno." },
+  { v:"1.0.5", f:"06/09/2026", t:"La entrada ya no dice con qué usuario probar: quien entra, sabe lo suyo." },
+  { v:"1.0.5", f:"06/09/2026", t:"El sistema arranca en claro; la noche se escoge y se queda." },
   { v:"1.0.5", f:"05/09/2026", t:"El menú se ordenó en tres filas y Ajustes quedó a un toque desde cualquier pantalla." },
   { v:"1.0.5", f:"05/09/2026", t:"Inicio saluda distinto según la hora, con un refrán que va con el día." },
   { v:"1.0.5", f:"05/09/2026", t:"Se escoge en qué moneda se leen las cifras, y el euro se calcula solo." },

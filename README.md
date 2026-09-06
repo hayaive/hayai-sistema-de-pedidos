@@ -50,15 +50,29 @@ pnpm install
 pnpm dev
 ```
 
-## Para entrar
+## Quién ve qué
 
-Tres cuentas de prueba, todas con la contraseña `1234`:
+Cada rol entra solo a sus pantallas. La pantalla de entrada no da pistas de
+cuentas: quien entra ya sabe la suya.
 
-| Usuario | Rol |
-|---|---|
-| `yorbin` | Cajero — vende, monta pedidos y cobra |
-| `maria` | Despacho — mueve existencia y entrega |
-| `ana` | Dueña — todo, incluidos los permisos |
+| Pantalla | Cajero | Despacho | Contador | Dueña |
+|---|:--:|:--:|:--:|:--:|
+| Venta | entra | entra | — | entra |
+| Pedidos | entra | entra | mira | entra |
+| Inventario | — | entra | mira | entra |
+| Clientes | entra | entra | mira | entra |
+| Facturación | — | — | mira | entra |
+| Ventas y cierre | — | — | mira | entra |
+| Usuarios | — | — | — | entra |
+| Ajustes | — | — | mira | entra |
+
+La **dueña** es la única que agrega usuarios, y desde Usuarios → *Permisos*
+puede abrirle o cerrarle pantallas a cualquiera, una por una, sin cambiarle
+el rol. Nadie puede tocar sus propios permisos: si no, alguien se deja
+afuera solo y no hay quien lo reponga.
+
+Las cuentas de prueba (`yorbin` cajero, `maria` despacho, `ana` dueña) están
+en `D.usuarios`, dentro de `public/prototipo.html`.
 
 ## Para publicar una versión nueva
 
