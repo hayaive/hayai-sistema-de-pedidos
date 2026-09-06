@@ -1149,50 +1149,51 @@ const D = {
     { id:3, nombre:"Ana Delgado",  usuario:"ana",    clave:"1234", rol:"duena",    iniciales:"AD" }
   ],
 
-  /* Precios pensados para una tasa oficial de ~807 Bs por dólar.
-     Cada producto tiene código, nombre y descripción: por los tres se busca. */
+  /* Precios en dólares, pegados a la tasa: se convierten a bolívares con la
+     tasa oficial en el momento en que el producto entra a una línea, no al
+     guardarlo aquí. Vienen del listado real del cliente — el Excel no traía
+     existencia, así que todos arrancan en 0 hasta cargarla con "Mover
+     existencia". "pecho de niña" trae el detal más barato que el mayor tal
+     cual venía en el Excel; probablemente sea un error de captura a revisar. */
+  tiposPrecio: [
+    { id:1, nombre:"Detal" },
+    { id:2, nombre:"Mayor" }
+  ],
+  seqTipoPrecio: 2,
   productos: [
-    { id:1,  codigo:"PAN-001", nombre:"Pan canilla",              descripcion:"Pan francés largo, horneado cada dos horas", familia:"Panadería",  precio:300,   disponible:140, minimo:40, vendidas:312 },
-    { id:2,  codigo:"PAN-002", nombre:"Cachito de jamón",         descripcion:"Masa dulce rellena de jamón",               familia:"Panadería",  precio:500,   disponible:48,  minimo:20, vendidas:86 },
-    { id:3,  codigo:"BEB-001", nombre:"Café con leche",           descripcion:"Taza grande, leche al vapor",               familia:"Bebidas",    precio:400,   disponible:200, minimo:0,  vendidas:74 },
-    { id:4,  codigo:"PAN-003", nombre:"Golfeado con queso",       descripcion:"Con papelón y queso rallado por encima",    familia:"Panadería",  precio:600,   disponible:8,   minimo:10, vendidas:41 },
-    { id:5,  codigo:"PAN-004", nombre:"Empanada de queso",        descripcion:"Harina de maíz, frita al momento",          familia:"Panadería",  precio:450,   disponible:31,  minimo:15, vendidas:38 },
-    { id:6,  codigo:"PAN-005", nombre:"Pan de jamón",             descripcion:"Pieza de 1 kg con aceitunas y pasas",       familia:"Panadería",  precio:4000,  disponible:34,  minimo:5,  vendidas:22 },
-    { id:7,  codigo:"PAS-001", nombre:"Tres leches, porción",     descripcion:"Bizcocho bañado, porción individual",       familia:"Pastelería", precio:1200,  disponible:24,  minimo:8,  vendidas:19 },
-    { id:8,  codigo:"PAS-002", nombre:"Quesillo",                 descripcion:"Porción individual con caramelo",           familia:"Pastelería", precio:1400,  disponible:4,   minimo:6,  vendidas:12 },
-    { id:9,  codigo:"BEB-002", nombre:"Jugo de naranja",          descripcion:"Natural, exprimido, 350 ml",                familia:"Bebidas",    precio:600,   disponible:40,  minimo:10, vendidas:11 },
-    { id:10, codigo:"BEB-003", nombre:"Marrón grande",            descripcion:"Café con poca leche, taza grande",          familia:"Bebidas",    precio:500,   disponible:200, minimo:0,  vendidas:9 },
-    { id:11, codigo:"PAS-003", nombre:"Torta de tres pisos",      descripcion:"Por encargo, decorada, hasta 40 porciones", familia:"Pastelería", precio:16000, disponible:3,   minimo:1,  vendidas:4 },
-    { id:12, codigo:"INS-001", nombre:"Caja de torta 30 cm",      descripcion:"Cartón con visor, para llevar",             familia:"Insumos",    precio:4000,  disponible:25,  minimo:10, vendidas:6 },
-    { id:13, codigo:"INS-002", nombre:"Harina de trigo, saco",    descripcion:"Saco de 45 kg, todo uso",                   familia:"Insumos",    precio:12000, disponible:50,  minimo:10, vendidas:2 },
-    { id:14, codigo:"INS-003", nombre:"Levadura fresca, kg",      descripcion:"Bloque de 1 kg refrigerado",                familia:"Insumos",    precio:2200,  disponible:5,   minimo:6,  vendidas:1 },
-
-    { id:15, codigo:"PAN-006", nombre:"Pan campesino",            descripcion:"Masa madre, corteza dura, 800 g",           familia:"Panadería",  precio:900,   disponible:22,  minimo:8,  vendidas:64 },
-    { id:16, codigo:"PAN-007", nombre:"Croissant de mantequilla", descripcion:"Hojaldre de 60 g, horneado en la mañana",   familia:"Panadería",  precio:700,   disponible:36,  minimo:12, vendidas:58 },
-    { id:17, codigo:"PAN-008", nombre:"Tequeño",                  descripcion:"Queso blanco duro en masa de trigo",        familia:"Panadería",  precio:350,   disponible:120, minimo:30, vendidas:187 },
-    { id:18, codigo:"PAN-009", nombre:"Empanada de carne mechada",descripcion:"Harina de maíz, carne desmechada",          familia:"Panadería",  precio:500,   disponible:28,  minimo:15, vendidas:52 },
-    { id:19, codigo:"PAN-010", nombre:"Pastelito de pollo",       descripcion:"Hojaldre relleno, horneado",                familia:"Panadería",  precio:550,   disponible:19,  minimo:10, vendidas:33 },
-    { id:20, codigo:"PAN-011", nombre:"Pan dulce trenzado",       descripcion:"Con azúcar granulada por encima",           familia:"Panadería",  precio:550,   disponible:24,  minimo:10, vendidas:29 },
-    { id:21, codigo:"PAN-012", nombre:"Pan de sándwich rebanado", descripcion:"Molde de 500 g, ya rebanado",               familia:"Panadería",  precio:1200,  disponible:16,  minimo:6,  vendidas:26 },
-    { id:22, codigo:"PAN-013", nombre:"Cachito de queso",         descripcion:"Masa dulce rellena de queso amarillo",      familia:"Panadería",  precio:500,   disponible:30,  minimo:15, vendidas:47 },
-
-    { id:23, codigo:"PAS-004", nombre:"Torta de chocolate 20 cm", descripcion:"Cubierta de ganache, 12 porciones",         familia:"Pastelería", precio:7000,  disponible:5,   minimo:2,  vendidas:14 },
-    { id:24, codigo:"PAS-005", nombre:"Marquesa de chocolate",    descripcion:"Envase individual, refrigerada",            familia:"Pastelería", precio:1500,  disponible:18,  minimo:6,  vendidas:21 },
-    { id:25, codigo:"PAS-006", nombre:"Bandeja de pastelitos",    descripcion:"24 unidades surtidas, por encargo",         familia:"Pastelería", precio:9000,  disponible:6,   minimo:2,  vendidas:8 },
-    { id:26, codigo:"PAS-007", nombre:"Suspiros, docena",         descripcion:"Merengue horneado, caja de 12",             familia:"Pastelería", precio:900,   disponible:14,  minimo:5,  vendidas:17 },
-    { id:27, codigo:"PAS-008", nombre:"Galletas decoradas, docena",descripcion:"Glaseadas a mano, por encargo",            familia:"Pastelería", precio:2400,  disponible:9,   minimo:3,  vendidas:10 },
-    { id:28, codigo:"PAS-009", nombre:"Brownie con nuez",         descripcion:"Porción individual, masa húmeda",           familia:"Pastelería", precio:950,   disponible:20,  minimo:8,  vendidas:24 },
-
-    { id:29, codigo:"BEB-004", nombre:"Café negro",               descripcion:"Taza pequeña, café de la casa",             familia:"Bebidas",    precio:250,   disponible:200, minimo:0,  vendidas:96 },
-    { id:30, codigo:"BEB-005", nombre:"Capuchino",                descripcion:"Espuma de leche y canela",                  familia:"Bebidas",    precio:650,   disponible:200, minimo:0,  vendidas:41 },
-    { id:31, codigo:"BEB-006", nombre:"Malta",                    descripcion:"Botella de 355 ml, fría",                   familia:"Bebidas",    precio:400,   disponible:48,  minimo:12, vendidas:35 },
-    { id:32, codigo:"BEB-007", nombre:"Agua mineral",             descripcion:"Botella de 600 ml",                         familia:"Bebidas",    precio:300,   disponible:60,  minimo:12, vendidas:28 },
-    { id:33, codigo:"BEB-008", nombre:"Chocolate caliente",       descripcion:"Con leche completa, taza grande",           familia:"Bebidas",    precio:700,   disponible:200, minimo:0,  vendidas:15 },
-
-    { id:34, codigo:"CHA-001", nombre:"Jamón de pierna, kg",      descripcion:"Cortado al momento en la charcutería",      familia:"Charcutería",precio:9000,  disponible:12,  minimo:4,  vendidas:18 },
-    { id:35, codigo:"CHA-002", nombre:"Queso blanco duro, kg",    descripcion:"Rallable, para golfeados y tequeños",       familia:"Charcutería",precio:7500,  disponible:15,  minimo:5,  vendidas:16 },
-    { id:36, codigo:"CHA-003", nombre:"Mortadela, kg",            descripcion:"Cortada al momento",                        familia:"Charcutería",precio:4500,  disponible:9,   minimo:4,  vendidas:12 },
-    { id:37, codigo:"INS-004", nombre:"Papel para tiquera",       descripcion:"Rollo térmico de 55 mm",                    familia:"Insumos",    precio:800,   disponible:2,   minimo:4,  vendidas:0 }
+    { id:1,  codigo:"PAS-001", nombre:"tres-leches",                 descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:2,  codigo:"PAS-002", nombre:"milhojas",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:3,  codigo:"PAS-003", nombre:"arequipe",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:4,  codigo:"PAS-004", nombre:"prestigio",                   descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:5,  codigo:"PAS-005", nombre:"brownie",                     descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.30}, disponible:0, minimo:0, vendidas:0 },
+    { id:6,  codigo:"PAS-006", nombre:"brownie-quesillo",            descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.50, 2:1.50}, disponible:0, minimo:0, vendidas:0 },
+    { id:7,  codigo:"PAS-007", nombre:"Beso de Angel",               descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.50, 2:1.50}, disponible:0, minimo:0, vendidas:0 },
+    { id:8,  codigo:"PAS-008", nombre:"yogurt",                      descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.50, 2:2.30}, disponible:0, minimo:0, vendidas:0 },
+    { id:9,  codigo:"PAS-009", nombre:"Quesillo pote",                descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.50, 2:2.30}, disponible:0, minimo:0, vendidas:0 },
+    { id:10, codigo:"PAS-010", nombre:"gelatina",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.00, 2:1.50}, disponible:0, minimo:0, vendidas:0 },
+    { id:11, codigo:"PAS-011", nombre:"bandeja de tequeños 30 und",  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.00, 2:1.50}, disponible:0, minimo:0, vendidas:0 },
+    { id:12, codigo:"PAS-012", nombre:"bandeja de pasapalos 100 und",descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:7.00, 2:6.00}, disponible:0, minimo:0, vendidas:0 },
+    { id:13, codigo:"PAS-013", nombre:"Quesillo Redondo",             descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:4.00, 2:3.50}, disponible:0, minimo:0, vendidas:0 },
+    { id:14, codigo:"PAS-014", nombre:"Cortaditos",                  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:15, codigo:"PAS-015", nombre:"catalina",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:16, codigo:"PAS-016", nombre:"patelitos",                   descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:17, codigo:"PAS-017", nombre:"galleta pasta seca",          descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:0.60, 2:0.60}, disponible:0, minimo:0, vendidas:0 },
+    { id:18, codigo:"PAS-018", nombre:"palmeritas",                  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:19, codigo:"PAS-019", nombre:"polvorosas",                  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:20, codigo:"PAS-020", nombre:"pan grande fruta",            descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.30}, disponible:0, minimo:0, vendidas:0 },
+    { id:21, codigo:"PAS-021", nombre:"pan de tunja",                descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.30}, disponible:0, minimo:0, vendidas:0 },
+    { id:22, codigo:"PAS-022", nombre:"golfeado",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:23, codigo:"PAS-023", nombre:"pecho de niña",               descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.30}, disponible:0, minimo:0, vendidas:0 },
+    { id:24, codigo:"BEB-001", nombre:"refresco de botella",         descripcion:"", categoria:"Bebidas",    subcategoria:"", precios:{1:1.00, 2:1.00}, disponible:0, minimo:0, vendidas:0 },
+    { id:25, codigo:"BEB-002", nombre:"refresco litro y medio",      descripcion:"", categoria:"Bebidas",    subcategoria:"", precios:{1:1.10, 2:1.10}, disponible:0, minimo:0, vendidas:0 },
+    { id:26, codigo:"TOR-001", nombre:"Grande 3kg",                  descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:13.00, 2:13.00}, disponible:0, minimo:0, vendidas:0 },
+    { id:27, codigo:"TOR-002", nombre:"Mediano 2kg",                 descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:11.00, 2:11.00}, disponible:0, minimo:0, vendidas:0 },
+    { id:28, codigo:"TOR-003", nombre:"kilo y medio",                descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:8.00, 2:8.00}, disponible:0, minimo:0, vendidas:0 },
+    { id:29, codigo:"TOR-004", nombre:"Mini 700 gr",                 descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:5.00, 2:5.00}, disponible:0, minimo:0, vendidas:0 },
+    { id:30, codigo:"OTR-001", nombre:"bandanas",                    descripcion:"", categoria:"Otros",      subcategoria:"", precios:{1:2.50, 2:2.50}, disponible:0, minimo:0, vendidas:0 },
+    { id:31, codigo:"INS-001", nombre:"vela escarchada",             descripcion:"", categoria:"Insumos",    subcategoria:"", precios:{1:1.20, 2:1.20}, disponible:0, minimo:0, vendidas:0 },
+    { id:32, codigo:"INS-002", nombre:"vela unitaria",               descripcion:"", categoria:"Insumos",    subcategoria:"", precios:{1:0.50, 2:0.50}, disponible:0, minimo:0, vendidas:0 },
+    { id:33, codigo:"INS-003", nombre:"toppers",                     descripcion:"", categoria:"Insumos",    subcategoria:"", precios:{1:2.00, 2:2.00}, disponible:0, minimo:0, vendidas:0 }
   ],
 
   clientes: [
@@ -1235,7 +1236,7 @@ function sembrar(){
     tasa:T, tasaTipo:"oficial", anulado:false, pedidoId: pedidoId || null
   });
   const P = id => D.productos.find(p => p.id === id);
-  const L = (id, cant) => ({ prodId:id, nombre:P(id).nombre, precio:P(id).precio, cant });
+  const L = (id, cant) => ({ prodId:id, nombre:P(id).nombre, precio:precioBaseBs(P(id)), cant });
 
   D.documentos = [
     doc(147, 15, 31, "Contado", "Punto de venta",     [L(6,2), L(3,4)]),
@@ -1277,7 +1278,7 @@ const saldoPedido = ped => Math.max(0, totalPedido(ped) - ped.abonado);
 function precioDe(l){
   if(l.precio != null) return l.precio;
   const p = D.productos.find(x => x.id === l.prodId);
-  return p ? p.precio : 0;
+  return p ? precioBaseBs(p) : 0;
 }
 function nombreDe(l){
   if(l.nombre) return l.nombre;
@@ -1294,12 +1295,34 @@ function buscarProductos(q){
 }
 const masVendidos = n => [...D.productos].sort((a, b) => b.vendidas - a.vendidas).slice(0, n);
 
+/* Sugerencias, no una lista cerrada: el datalist ofrece lo que ya existe
+   pero el campo sigue siendo texto libre, así se puede escribir una
+   categoría o subcategoría nueva sin tener que ir a otro lado primero. */
+function datalistCategorias(){
+  const v = [...new Set(D.productos.map(p => p.categoria).filter(Boolean))];
+  return '<datalist id="dl-categorias">' + v.map(c => '<option value="' + esc(c) + '">').join("") + "</datalist>";
+}
+function datalistSubcategorias(){
+  const v = [...new Set(D.productos.map(p => p.subcategoria).filter(Boolean))];
+  return '<datalist id="dl-subcategorias">' + v.map(c => '<option value="' + esc(c) + '">').join("") + "</datalist>";
+}
+
 function cliente(id){ return D.clientes.find(c => c.id === id) || null; }
 function nombreCliente(ped){
   const c = cliente(ped.clienteId);
   return c ? c.nombre : "Sin cliente";
 }
 const enDivisa = (montoBs, tipo) => montoBs / D.tasas[tipo || "oficial"];
+/* Los precios del catálogo viven en dólares, pegados a la tasa: no se
+   guarda un monto en bolívares fijo en el producto. Se convierte recién
+   al entrar a una línea de venta o pedido — de ahí en adelante ese monto
+   en Bs queda congelado como hoy, no vuelve a moverse con la tasa. */
+const precioUSD = p => {
+  const precios = p.precios || {};
+  const def = D.tiposPrecio[0] && precios[D.tiposPrecio[0].id];
+  return def != null ? def : (Object.values(precios)[0] || 0);
+};
+const precioBaseBs = p => precioUSD(p) * D.tasas.oficial;
 function signo(tipo){ return tipo === "euro" ? "€" : "$"; }
 function etiquetaTasa(tipo){
   return { oficial:"dólar oficial", euro:"euro oficial", mercado:"dólar de mercado" }[tipo];
@@ -1350,7 +1373,7 @@ function equivalente(montoBs, tipo){
 }
 const totalVenta = () => D.venta.reduce((s, l) => {
   const p = D.productos.find(x => x.id === l.prodId);
-  return s + (p ? p.precio * l.cant : 0);
+  return s + (p ? precioBaseBs(p) * l.cant : 0);
 }, 0);
 
 function ventasDelDia(){ return D.documentos.filter(d => !d.anulado); }
@@ -1378,7 +1401,7 @@ function anotar(texto){
    eso se arma solo al abrir y guardarlo solo daría rarezas al volver.
    ═══════════════════════════════════════════════════════════════ */
 const LLAVE = "hayai-mostrador";
-const FORMATO = 1;          // si cambia la forma de los datos, sube este número
+const FORMATO = 2;          // si cambia la forma de los datos, sube este número
 const TOPE_BITACORA = 400;  // el almacén no es infinito: la bitácora se poda
 const HORAS_SESION = 12;    // pasado eso, hay que volver a entrar
 
@@ -1401,6 +1424,7 @@ function estadoGuardable(){
     negocio: D.negocio,
     usuarios: D.usuarios,
     productos: D.productos,
+    tiposPrecio: D.tiposPrecio,
     clientes: D.clientes,
     pedidos: D.pedidos,
     documentos: D.documentos,
@@ -1412,6 +1436,7 @@ function estadoGuardable(){
     euroAMano: D.euroAMano,
     euroCalculado: D.euroCalculado,
     seqDoc: D.seqDoc, seqPedido: D.seqPedido, seqProd: D.seqProd, seqCliente: D.seqCliente,
+    seqTipoPrecio: D.seqTipoPrecio,
     /* La venta a medio armar y el pedido a medio montar también: si la
        tableta se duerme o se recarga, nadie tiene que empezar de nuevo. */
     venta: D.venta,
@@ -1476,6 +1501,7 @@ function cargar(){
     if(g.negocio)   D.negocio   = g.negocio;
     if(g.usuarios)  D.usuarios  = g.usuarios;
     if(g.productos) D.productos = g.productos;
+    if(g.tiposPrecio) D.tiposPrecio = g.tiposPrecio;
     if(g.clientes)  D.clientes  = g.clientes;
     if(g.pedidos)   D.pedidos   = g.pedidos.map(p => Object.assign({}, p, { retiro: aFecha(p.retiro) }));
     if(g.documentos)D.documentos= g.documentos.map(d => Object.assign({}, d, { hora: aFecha(d.hora) }));
@@ -1486,7 +1512,7 @@ function cargar(){
     if(g.tasaEstado)D.tasaEstado= g.tasaEstado;
     D.euroAMano     = !!g.euroAMano;
     D.euroCalculado = !!g.euroCalculado;
-    ["seqDoc","seqPedido","seqProd","seqCliente"].forEach(k => {
+    ["seqDoc","seqPedido","seqProd","seqCliente","seqTipoPrecio"].forEach(k => {
       if(typeof g[k] === "number") D[k] = g[k];
     });
     D.venta      = Array.isArray(g.venta) ? g.venta : [];
@@ -1879,7 +1905,7 @@ function cabecera(){
   if(D.pantalla === "clientes" && puedeEditar("clientes"))
     acc = '<button class="btn btn--sol" data-a="ventana" data-v="cliente">' + ic("mas") + "Registrar cliente</button>";
   if(D.pantalla === "inventario" && puedeEditar("inventario"))
-    acc = '<button class="btn btn--contorno" data-a="ventana" data-v="nuevoProducto" data-desde="inventario">' +
+    acc = '<button class="btn btn--contorno" data-a="ventana" data-v="producto">' +
           ic("mas") + "Nuevo producto</button>" +
           '<button class="btn btn--sol" data-a="ventana" data-v="existencia">' + ic("capas") + "Mover existencia</button>";
   if(D.pantalla === "cierre")
@@ -2033,7 +2059,7 @@ function vistaVenta(){
         const l = libre(p);
         return '<button class="prod" data-a="agregar" data-id="' + p.id + '"' + (l <= 0 ? " disabled" : "") + ">" +
           '<span class="prod__n">' + esc(p.nombre) + "</span>" +
-          '<span class="prod__p">' + bs(p.precio) + "</span>" +
+          '<span class="prod__p">' + bs(precioBaseBs(p)) + "</span>" +
           '<span class="prod__x' + (l <= 0 ? '" style="color:var(--rojo)' : (l <= p.minimo ? '" style="color:var(--sol-70)' : "")) + '">' +
           (l <= 0 ? "no queda" : l + " libres") + "</span></button>";
       }).join("") + "</div>"
@@ -2055,7 +2081,7 @@ function vistaVenta(){
             '<button data-a="menos" data-id="' + p.id + '" aria-label="Quitar uno">−</button>' +
             "<span>" + l.cant + "</span>" +
             '<button data-a="agregar" data-id="' + p.id + '" aria-label="Poner uno">+</button>' +
-          '</span><span class="linea-v__t">' + num(p.precio * l.cant) + "</span></div>";
+          '</span><span class="linea-v__t">' + num(precioBaseBs(p) * l.cant) + "</span></div>";
       }).join("")
     : '<p class="min tenue" style="padding:1.2rem 0">Toca un producto de la izquierda, o escribe su nombre en el buscador y pulsa Enter.</p>';
 
@@ -2223,28 +2249,30 @@ function detallePedido(p){
 /* ── Inventario ────────────────────────────────────────────────── */
 function vistaInventario(){
   const q = D.q.inventario.trim().toLowerCase();
-  const familias = ["todas", ...new Set(D.productos.map(p => p.familia))];
+  const categorias = ["todas", ...new Set(D.productos.map(p => p.categoria))];
   const lista = D.productos.filter(p =>
-    (D.filtro.inventario === "todas" || p.familia === D.filtro.inventario) &&
+    (D.filtro.inventario === "todas" || p.categoria === D.filtro.inventario) &&
     (!q || p.nombre.toLowerCase().includes(q)));
   const bajos = D.productos.filter(bajoMinimo);
 
-  const filtros = familias.map(f => '<button class="btn btn--contorno' + (D.filtro.inventario === f ? " es-activo" : "") +
+  const filtros = categorias.map(f => '<button class="btn btn--contorno' + (D.filtro.inventario === f ? " es-activo" : "") +
     '" data-a="filtroInv" data-v="' + esc(f) + '">' + (f === "todas" ? "Todas" : esc(f)) + "</button>").join("");
 
   const tabla = lista.length
-    ? '<div class="tabla-env"><table class="tabla"><thead><tr><th>Producto</th><th>Familia</th>' +
-      '<th class="num">Hay</th><th class="num">Apartado</th><th class="num">Libre</th><th style="width:8rem">Reparto</th></tr></thead><tbody>' +
+    ? '<div class="tabla-env"><table class="tabla"><thead><tr><th>Producto</th><th>Categoría</th>' +
+      '<th class="num">Hay</th><th class="num">Apartado</th><th class="num">Libre</th><th style="width:8rem">Reparto</th><th style="width:2.6rem"></th></tr></thead><tbody>' +
       lista.map(p => {
         const l = libre(p), base = Math.max(p.disponible, 1);
         return '<tr class="pulsable" data-a="ventana" data-v="existencia" data-id="' + p.id + '">' +
           "<td>" + esc(p.nombre) + (bajoMinimo(p) ? ' <span class="chip chip--rojo chip--xs">bajo el mínimo</span>' : "") + "</td>" +
-          '<td class="min tenue">' + esc(p.familia) + "</td>" +
+          '<td class="min tenue">' + esc(p.categoria) + "</td>" +
           '<td class="num' + (bajoMinimo(p) ? " rojo" : "") + '">' + p.disponible + "</td>" +
           '<td class="num' + (p.comprometido ? " ambar" : " tenue") + '">' + p.comprometido + "</td>" +
           '<td class="num" style="font-weight:600;color:' + (l <= 0 ? "var(--rojo)" : (l <= p.minimo ? "var(--sol-70)" : "var(--verde)")) + '">' + l + "</td>" +
           '<td><div class="medidor" style="height:.42rem"><i class="m-libre" style="width:' + Math.round(l / base * 100) +
-            '%"></i><i class="m-comp" style="width:' + Math.round(p.comprometido / base * 100) + '%"></i></div></td></tr>';
+            '%"></i><i class="m-comp" style="width:' + Math.round(p.comprometido / base * 100) + '%"></i></div></td>' +
+          '<td><button class="btn btn--fantasma btn--sm btn--icono" data-a="ventana" data-v="producto" data-id="' + p.id +
+            '" title="Editar producto" aria-label="Editar producto">' + ic("lapiz","ic--sm") + "</button></td></tr>";
       }).join("") + "</tbody></table></div>"
     : '<div class="vacio vacio--filtro"><span class="vacio__ic">' + ic("buscar","ic--lg") + "</span>" +
       "<h4>Ningún producto coincide</h4><p>Hay " + D.productos.length + " productos en total. Quita lo que escribiste o vuelve a «Todas».</p>" +
@@ -2262,7 +2290,7 @@ function vistaInventario(){
     '<div data-tour="tabla">' + tabla + "</div>" +
     '<div class="medidor-ley"><span><i style="background:var(--verde)"></i>Libre: se puede vender ahora</span>' +
     '<span><i style="background:var(--sol)"></i>Apartado en pedidos sin cobrar</span>' +
-    '<span class="tenue">Toca cualquier fila para mover existencia.</span></div>';
+    '<span class="tenue">Toca la fila para mover existencia, o el lápiz para editar la ficha.</span></div>';
 }
 
 /* ── Clientes ──────────────────────────────────────────────────── */
@@ -2486,6 +2514,22 @@ function vistaAjustes(){
       '<span class="chip chip--liso chip--xs chip--hueco">' + plural(D.usuarios.length, "usuario", "usuarios") + "</span></div>" +
       '<p class="min tenue">Quién entra al sistema, con qué usuario entra cada quien y qué puede hacer ahora tiene su propia pantalla.</p>' +
       '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ir" data-p="usuarios">' + ic("gente") + "Ir a Usuarios</button></div></div>" +
+
+      (D.usuario && D.usuario.rol === "duena" ?
+      '<div class="tarj"><div class="tarj__cab">' + ic("billete","ambar") + "<h4>Tipos de precio</h4>" +
+      '<span class="chip chip--liso chip--xs chip--hueco">' + plural(D.tiposPrecio.length, "tipo", "tipos") + "</span></div>" +
+      '<p class="min tenue">Detal, mayor, y los que hagan falta. Cada producto tiene un renglón de precio por cada tipo de aquí.</p>' +
+      '<div class="col" style="gap:0;margin-top:.6rem">' + D.tiposPrecio.map(t =>
+        '<div class="linea-v"><span class="linea-v__n">' + esc(t.nombre) + "</span>" +
+        '<span class="fila" style="gap:.3rem">' +
+        '<button class="btn btn--fantasma btn--sm btn--icono" data-a="ventana" data-v="tipoPrecio" data-id="' + t.id +
+          '" title="Renombrar">' + ic("lapiz","ic--sm") + "</button>" +
+        '<button class="btn btn--fantasma btn--sm btn--icono" data-a="ventana" data-v="borrarTipoPrecio" data-id="' + t.id +
+          '"' + (D.tiposPrecio.length <= 1 ? " disabled" : "") + ' title="' +
+          (D.tiposPrecio.length <= 1 ? "Tiene que quedar al menos un tipo de precio" : "Eliminar") + '">' +
+          ic("papelera","ic--sm") + "</button></span></div>").join("") + "</div>" +
+      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="tipoPrecio">' +
+        ic("mas") + "Nuevo tipo de precio</button></div></div>" : "") +
     "</div>" +
 
     '<div class="col">' +
@@ -2642,6 +2686,9 @@ function ventanaHTML(){
   if(v === "ticket")         return ventTicket();
   if(v === "tasas")          return ventTasas();
   if(v === "cliente")        return ventCliente();
+  if(v === "producto")       return ventProducto();
+  if(v === "tipoPrecio")     return ventTipoPrecio();
+  if(v === "borrarTipoPrecio") return ventBorrarTipoPrecio();
   if(v === "existencia")     return ventExistencia();
   if(v === "usuario")        return ventUsuario();
   if(v === "empezarCero")    return ventEmpezarCero();
@@ -2780,7 +2827,7 @@ function vistaMontar(){
           '<span class="prod__cod">' + esc(p.codigo) + "</span>" +
           '<span class="prod__n">' + esc(p.nombre) + "</span>" +
           '<span class="prod__d">' + esc(p.descripcion) + "</span>" +
-          '<span class="prod__p">' + bs(p.precio) + "</span>" +
+          '<span class="prod__p">' + bs(precioBaseBs(p)) + "</span>" +
           '<span class="prod__x">' + libre(p) + " libres</span></button>").join("") + "</div>"
       : '<p class="min tenue">Nada se llama «' + esc(q2) + '», se describe así, ni tiene ese código.</p>') +
     (hayLineas
@@ -3018,6 +3065,60 @@ function ventCliente(){
     '<button class="btn btn--sol" data-a="guardarCliente" data-id="' + (edita ? edita.id : "") + '">' + (edita ? "Guardar" : "Registrar") + "</button></div></div>";
 }
 
+/* ── Ficha de producto: crear o editar ────────────────────────────
+   Nombre y descripción son texto libre, nunca una lista desplegable
+   — cada producto es único y se escribe, no se elige de una lista.
+   Los precios son uno por cada tipo que exista en D.tiposPrecio: si
+   la dueña agrega un tipo nuevo, todo producto gana ese renglón. */
+function ventProducto(){
+  const edita = D.ventana.id ? D.productos.find(x => x.id === Number(D.ventana.id)) : null;
+  const precios = edita ? (edita.precios || {}) : {};
+  return '<div class="vent">' + cab(edita ? "Editar producto" : "Nuevo producto",
+      "Los precios son en dólares — se cobran en bolívares con la tasa del momento") +
+    '<div class="vent__cuerpo">' +
+      '<div class="campo"><label class="campo__et">Nombre</label>' +
+      '<input class="ent ent--lg" id="pr-nombre" value="' + esc(edita ? edita.nombre : "") + '"></div>' +
+      '<div class="campo"><label class="campo__et">Descripción <span class="tenue" style="font-weight:400">— opcional</span></label>' +
+      '<textarea class="ent" id="pr-descripcion">' + esc(edita ? (edita.descripcion || "") : "") + "</textarea></div>" +
+      '<div class="rejilla-2">' +
+        '<div class="campo"><label class="campo__et">Categoría</label>' +
+        '<input class="ent" id="pr-categoria" list="dl-categorias" value="' + esc(edita ? edita.categoria : "") + '"></div>' +
+        '<div class="campo"><label class="campo__et">Subcategoría <span class="tenue" style="font-weight:400">— opcional</span></label>' +
+        '<input class="ent" id="pr-subcategoria" list="dl-subcategorias" value="' + esc(edita ? (edita.subcategoria || "") : "") + '"></div></div>' +
+      datalistCategorias() + datalistSubcategorias() +
+      '<div><p class="rot" style="margin-bottom:.4rem">PRECIOS</p><div class="rejilla-2">' +
+      D.tiposPrecio.map(t =>
+        '<div class="campo"><label class="campo__et">' + esc(t.nombre) + '</label><div class="grupo-ent">' +
+        '<span class="grupo-ent__fijo">$</span><input class="ent ent--cifra" id="pr-precio-' + t.id +
+        '" inputmode="decimal" value="' + (precios[t.id] != null ? precios[t.id] : 0) + '"></div></div>').join("") +
+      "</div></div>" +
+      '<div id="pr-aviso"></div>' +
+    '</div><div class="vent__pie"><button class="btn btn--fantasma" style="margin-left:auto" data-a="cerrarVentana">Cancelar</button>' +
+    '<button class="btn btn--sol" data-a="guardarProducto" data-id="' + (edita ? edita.id : "") + '">Guardar</button></div></div>';
+}
+
+/* ── Tipos de precio: solo la dueña los crea, edita o borra ──────── */
+function ventTipoPrecio(){
+  const edita = D.ventana.id ? D.tiposPrecio.find(x => x.id === Number(D.ventana.id)) : null;
+  return '<div class="vent vent--angosta">' + cab(edita ? "Renombrar tipo de precio" : "Nuevo tipo de precio",
+      "Por ejemplo, Detal, Mayor, o Por mayor grande") +
+    '<div class="vent__cuerpo">' +
+      '<div class="campo"><label class="campo__et">Nombre</label>' +
+      '<input class="ent ent--lg" id="tp-nombre" value="' + esc(edita ? edita.nombre : "") + '"></div>' +
+      '<div id="tp-aviso"></div>' +
+    '</div><div class="vent__pie"><button class="btn btn--fantasma" style="margin-left:auto" data-a="cerrarVentana">Cancelar</button>' +
+    '<button class="btn btn--sol" data-a="guardarTipoPrecio" data-id="' + (edita ? edita.id : "") + '">Guardar</button></div></div>';
+}
+function ventBorrarTipoPrecio(){
+  const t = D.tiposPrecio.find(x => x.id === Number(D.ventana.id));
+  return '<div class="vent vent--angosta">' + cab("¿Eliminar «" + esc(t.nombre) + "»?", "") +
+    '<div class="vent__cuerpo">' +
+      '<div class="aviso aviso--sol"><span class="aviso__ic">' + ic("alerta") + "</span><div>" +
+      '<p class="aviso__d">Cada producto pierde su precio «' + esc(t.nombre) + "». Los demás tipos de precio no cambian.</p></div></div>" +
+    '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
+    '<button class="btn btn--peligro" style="margin-left:auto" data-a="borrarTipoPrecio" data-id="' + t.id + '">Eliminar</button></div></div>';
+}
+
 /* ── Mover existencia ──────────────────────────────────────────── */
 function ventExistencia(){
   const id = Number(D.ventana.id) || D.productos[0].id;
@@ -3238,24 +3339,20 @@ function ventAtajos(){
 
 /* ── Crear producto desde la venta ─────────────────────────────── */
 function ventNuevoProducto(){
-  const deInventario = D.ventana && D.ventana.desde === "inventario";
   return '<div class="vent vent--angosta">' +
-    cab("Crear producto", deInventario ? "Entra al inventario y ya se puede vender" : "Solo el precio y cuántas hay") +
+    cab("Crear producto", "Solo el precio y cuántas hay") +
     '<div class="vent__cuerpo">' +
       '<div class="campo"><label class="campo__et">Nombre</label><input class="ent ent--lg" id="np-nombre" value="' +
-        esc(deInventario ? "" : D.q.venta) + '"></div>' +
+        esc(D.q.venta) + '"></div>' +
       '<div class="rejilla-2">' +
-        '<div class="campo"><label class="campo__et">Precio</label><div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
+        '<div class="campo"><label class="campo__et">Precio detal</label><div class="grupo-ent"><span class="grupo-ent__fijo">$</span>' +
         '<input class="ent ent--cifra" id="np-precio" inputmode="decimal" value="0"></div></div>' +
         '<div class="campo"><label class="campo__et">Cuántas hay</label><input class="ent ent--cifra" id="np-cant" inputmode="numeric" value="1"></div></div>' +
-      '<div class="campo"><label class="campo__et">Familia</label><select class="ent" id="np-familia">' +
-      [...new Set(D.productos.map(p => p.familia))].map(f => "<option>" + esc(f) + "</option>").join("") + "</select></div>" +
-      '<p class="nota-pie">' + (deInventario
-        ? "Queda en el inventario con esa existencia. Para moverla después, toca su fila en la tabla."
-        : "Se crea y entra al ticket de una. No hace falta salir de la venta.") + "</p>" +
+      '<div class="campo"><label class="campo__et">Categoría</label><input class="ent" id="np-categoria" list="dl-categorias"></div>' +
+      datalistCategorias() +
+      '<p class="nota-pie">Se crea y entra al ticket de una. No hace falta salir de la venta.</p>' +
     '</div><div class="vent__pie"><button class="btn btn--fantasma" style="margin-left:auto" data-a="cerrarVentana">Cancelar</button>' +
-    '<button class="btn btn--sol" data-a="crearProducto">' +
-    (deInventario ? "Crear producto" : "Crear y agregar") + "</button></div></div>";
+    '<button class="btn btn--sol" data-a="crearProducto">Crear y agregar</button></div></div>";
 }
 
 /* ── Confirmaciones ────────────────────────────────────────────── */
@@ -3770,7 +3867,7 @@ function bAgregarPrimero(){
 function bAgregar(id){
   const p = D.productos.find(x => x.id === id);
   const l = D.borrador.lineas.find(x => x.prodId === id);
-  if(l) l.cant++; else D.borrador.lineas.push({ prodId:id, nombre:p.nombre, precio:p.precio, cant:1 });
+  if(l) l.cant++; else D.borrador.lineas.push({ prodId:id, nombre:p.nombre, precio:precioBaseBs(p), cant:1 });
 }
 
 function nuevoDocumento(cliente, pago, lineas, total, pedidoId){
@@ -3862,7 +3959,7 @@ const ACCIONES = {
     const forma = formasPago().find(f => f.id === D.ventaPago);
     const lineas = D.venta.map(l => {
       const p = D.productos.find(x => x.id === l.prodId);
-      return { prodId:p.id, nombre:p.nombre, precio:p.precio, cant:l.cant };
+      return { prodId:p.id, nombre:p.nombre, precio:precioBaseBs(p), cant:l.cant };
     });
     const total = totalVenta();
     descontar(lineas);
@@ -3876,20 +3973,16 @@ const ACCIONES = {
   otraVenta(){ D.ventana = null; D.pantalla = "venta"; D.foco = "q-venta"; render(); },
   crearProducto(){
     const nombre = ($("#np-nombre").value || "").trim();
-    const precio = aNumero($("#np-precio").value);
+    const precioUsd = aNumero($("#np-precio").value);
     const cant = Number($("#np-cant").value) || 0;
+    const categoria = ($("#np-categoria").value || "").trim() || "Sin categoría";
     if(!nombre){ avisar("Falta el nombre", "Escribe cómo se llama para poder crearlo.", "mal"); return; }
-    const p = { id: ++D.seqProd, nombre, familia: $("#np-familia").value, precio,
+    const p = { id: ++D.seqProd, nombre, descripcion:"", categoria, subcategoria:"",
+                precios: { [D.tiposPrecio[0].id]: precioUsd },
                 disponible: cant, comprometido:0, minimo:0, vendidas:0 };
     D.productos.push(p);
-    anotar("Creó el producto " + nombre + " · " + bs(precio));
-    const deInventario = D.ventana && D.ventana.desde === "inventario";
+    anotar("Creó el producto " + nombre + " · " + bs(precioBaseBs(p)));
     D.ventana = null;
-    if(deInventario){
-      render();
-      avisar("Creado", nombre + " ya está en el inventario con " + plural(cant, "unidad", "unidades") + ".");
-      return;
-    }
     D.q.venta = "";
     agregarProducto(p.id);
     render();
@@ -4030,6 +4123,67 @@ const ACCIONES = {
     avisar(ds.id ? "Guardado" : "Registrado", c.nombre);
   },
   completarCliente(){ $("#cl-aviso").innerHTML = ""; const el = $("#cl-cedula"); if(el) el.focus(); },
+
+  guardarProducto(ds){
+    const nombre = (($("#pr-nombre") || {}).value || "").trim();
+    if(!nombre){
+      $("#pr-aviso").innerHTML = '<div class="aviso aviso--rojo"><span class="aviso__ic">' + ic("alerta") +
+        '</span><div><p class="aviso__t">Falta el nombre</p><p class="aviso__d">Escribe cómo se llama el producto.</p></div></div>';
+      return;
+    }
+    const descripcion = (($("#pr-descripcion") || {}).value || "").trim();
+    const categoria = (($("#pr-categoria") || {}).value || "").trim() || "Sin categoría";
+    const subcategoria = (($("#pr-subcategoria") || {}).value || "").trim();
+    const precios = {};
+    D.tiposPrecio.forEach(t => { precios[t.id] = aNumero(($("#pr-precio-" + t.id) || {}).value); });
+
+    let p;
+    if(ds.id){
+      p = D.productos.find(x => x.id === Number(ds.id));
+      Object.assign(p, { nombre, descripcion, categoria, subcategoria, precios });
+      anotar("Editó el producto " + p.nombre);
+    } else {
+      p = { id: ++D.seqProd, codigo:"", nombre, descripcion, categoria, subcategoria, precios,
+            disponible:0, comprometido:0, minimo:0, vendidas:0 };
+      D.productos.push(p);
+      anotar("Creó el producto " + p.nombre);
+    }
+    D.ventana = null;
+    render();
+    avisar(ds.id ? "Producto guardado" : "Producto creado",
+      p.nombre + (ds.id ? "" : " ya está en el inventario. Cárgale existencia con «Mover existencia».") );
+  },
+
+  /* Tipos de precio — solo la dueña reparte esto, igual que usuarios y permisos */
+  guardarTipoPrecio(ds){
+    if(!D.usuario || D.usuario.rol !== "duena") return;
+    const nombre = (($("#tp-nombre") || {}).value || "").trim();
+    if(!nombre){
+      $("#tp-aviso").innerHTML = '<div class="aviso aviso--rojo"><span class="aviso__ic">' + ic("alerta") +
+        '</span><div><p class="aviso__t">Falta el nombre</p><p class="aviso__d">Escribe cómo se llama este tipo de precio.</p></div></div>';
+      return;
+    }
+    if(ds.id){
+      D.tiposPrecio.find(x => x.id === Number(ds.id)).nombre = nombre;
+      anotar("Renombró el tipo de precio a " + nombre);
+    } else {
+      D.tiposPrecio.push({ id: ++D.seqTipoPrecio, nombre });
+      anotar("Creó el tipo de precio " + nombre);
+    }
+    D.ventana = null; render();
+    avisar(ds.id ? "Tipo de precio actualizado" : "Tipo de precio creado", nombre);
+  },
+  borrarTipoPrecio(ds){
+    if(!D.usuario || D.usuario.rol !== "duena") return;
+    if(D.tiposPrecio.length <= 1){ D.ventana = null; render(); return; }
+    const id = Number(ds.id);
+    const t = D.tiposPrecio.find(x => x.id === id);
+    D.tiposPrecio = D.tiposPrecio.filter(x => x.id !== id);
+    D.productos.forEach(p => { if(p.precios) delete p.precios[id]; });
+    anotar("Eliminó el tipo de precio " + t.nombre);
+    D.ventana = null; render();
+    avisar("Tipo de precio eliminado", t.nombre);
+  },
 
   /* Facturación */
   verDoc(ds){ D.docAbierto = Number(ds.id); render(); },
@@ -4240,7 +4394,7 @@ const ACCION_MODULO = {
   bAbonoRapido:"pedidos", limpiarBorrador:"pedidos", bDia:"pedidos", bFecha:"pedidos",
   bHora:"pedidos", bAbono:"pedidos", bNota:"pedidos", bCliente:"pedidos", bGuardar:"pedidos",
 
-  moverExistencia:"inventario", crearProducto:"inventario",
+  moverExistencia:"inventario", crearProducto:"inventario", guardarProducto:"inventario",
 
   guardarCliente:"clientes", completarCliente:"clientes", bNuevoCliente:"clientes",
 
@@ -4250,7 +4404,8 @@ const ACCION_MODULO = {
 
   rol:"usuarios", guardarUsuario:"usuarios", permiso:"usuarios",
 
-  guardarTasas:"ajustes", tasaPref:"ajustes", efectivo:"ajustes", moneda:"ajustes", conexion:"ajustes"
+  guardarTasas:"ajustes", tasaPref:"ajustes", efectivo:"ajustes", moneda:"ajustes", conexion:"ajustes",
+  guardarTipoPrecio:"ajustes", borrarTipoPrecio:"ajustes"
 };
 
 function hacer(a, ds, el, e){
