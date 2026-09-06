@@ -714,20 +714,19 @@ body{overflow-x:hidden;background:var(--papel)}
 @media (max-width:620px){
   .menu-fila--2,.menu-fila--3{grid-template-columns:minmax(0,1fr)}
 }
-.card-nav{display:flex;flex-direction:column;gap:.35rem;text-align:left;font:inherit;color:var(--texto);
-  background:var(--sup);border:1px solid var(--linea);border-radius:var(--r3);padding:1rem;cursor:pointer;
-  transition:border-color .14s,box-shadow .14s,transform .08s}
-.card-nav:hover{border-color:var(--sol);box-shadow:var(--sombra-2);transform:translateY(-2px)}
-.card-nav:active{transform:translateY(0)}
-.card-nav:focus-visible{outline:none;border-color:var(--sol);box-shadow:var(--foco)}
-.card-nav__ic{width:3.6rem;height:3.6rem;border-radius:1rem;
-  background:linear-gradient(135deg,var(--sol) 0%,var(--sol-90) 100%);color:#16110B;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 16px -8px rgba(224,143,22,.6),inset 0 -1px 0 rgba(22,17,11,.14);margin-bottom:.35rem}
-.card-nav__ic .ic{width:2.1rem;height:2.1rem}
-.card-nav__n{font-size:1.05rem;font-weight:650;letter-spacing:0}
-.card-nav__pie{margin-top:.5rem;display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
-.card-nav__tecla{margin-left:auto;color:var(--texto-3)}
+.card-nav{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.6rem;text-align:center;font:inherit;color:#16110B;min-height:9rem;
+  background:linear-gradient(135deg,var(--sol) 0%,var(--sol-90) 100%);border:none;border-radius:1.25rem;
+  padding:1.75rem 1rem;cursor:pointer;
+  box-shadow:0 6px 16px -8px rgba(224,143,22,.6),inset 0 -1px 0 rgba(22,17,11,.14);
+  transition:box-shadow .14s,transform .08s}
+.card-nav:hover{box-shadow:0 10px 26px -8px rgba(224,143,22,.7),inset 0 -1px 0 rgba(22,17,11,.14);transform:translateY(-2px)}
+.card-nav:active{transform:translateY(0) scale(.985)}
+.card-nav:focus-visible{outline:none;box-shadow:var(--foco),0 6px 16px -8px rgba(224,143,22,.6)}
+.card-nav__ic{display:flex;align-items:center;justify-content:center}
+.card-nav__ic .ic{width:2.75rem;height:2.75rem}
+.card-nav__n{font-size:1.1rem;font-weight:700;letter-spacing:0}
+.card-nav__tecla{position:absolute;top:.7rem;right:.7rem}
 
 /* La salida, siempre en el mismo sitio y siempre a la vista */
 .volver-menu{position:fixed;left:50%;transform:translateX(-50%);bottom:4.1rem;z-index:27;
@@ -1698,9 +1697,9 @@ function logoImg(alto){
 function tarjetaNav(k){
   const p = PANTALLAS[k];
   return '<button class="card-nav" data-a="ir" data-p="' + k + '">' +
+    (p.tecla ? '<span class="tecla card-nav__tecla">' + p.tecla + "</span>" : "") +
     '<span class="card-nav__ic">' + ic(p.ic) + "</span>" +
-    '<span class="card-nav__n">' + p.n + "</span>" +
-    (p.tecla ? '<span class="card-nav__pie"><span class="tecla card-nav__tecla">' + p.tecla + "</span></span>" : "") + "</button>";
+    '<span class="card-nav__n">' + p.n + "</span></button>";
 }
 
 /* Las tres filas no son decoración: separan lo que se hace todo el rato
