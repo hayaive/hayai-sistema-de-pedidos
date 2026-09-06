@@ -2985,7 +2985,7 @@ function ventDejarPedido(){
 
 /* ── Cobrar ────────────────────────────────────────────────────── */
 function ventCobrar(){
-  const p = D.pedidos.find(x => x.id === D.ventana.id);
+  const p = D.pedidos.find(x => x.id === Number(D.ventana.id));
   const falta = saldoPedido(p);
   if(!D.cobro) D.cobro = { pago: formasPago()[0].id, recibe: falta };
   const enUsd = D.cobro.pago === "efectivo_usd";
@@ -3023,7 +3023,7 @@ function ventCobrar(){
 
 /* ── Ticket ────────────────────────────────────────────────────── */
 function ventTicket(){
-  const d = D.documentos.find(x => x.id === D.ventana.id);
+  const d = D.documentos.find(x => x.id === Number(D.ventana.id));
   const otra = D.ventana.otra;
   return '<div class="vent vent--angosta">' + cab("Ticket " + String(d.id).padStart(5, "0"), "Así sale de la tiquera de 55 mm") +
     '<div class="vent__cuerpo" style="align-items:center">' + ticketHTML(d) + "</div>" +
