@@ -519,6 +519,16 @@ table.tabla{width:100%;border-collapse:collapse;font-size:.9rem}
 .ticket .tot{font-size:13px;font-weight:600}
 .ticket__pie{font-size:9.5px;color:#6B6157;text-align:center;margin-top:8px}
 
+/* Al imprimir, solo el ticket — nada de cabecera, overlay ni botones.
+   visibility (no display) para no desarmar el layout interno del
+   ticket mientras se oculta todo lo de alrededor. */
+@media print{
+  body *{visibility:hidden}
+  .ticket, .ticket *{visibility:visible}
+  .ticket{position:fixed;top:0;left:0;width:220px;border:none;box-shadow:none;padding:0}
+  @page{margin:6mm}
+}
+
 /* ═══ MAQUETAS DE PANTALLA ═════════════════════════════════════ */
 .pantalla{border:1px solid var(--linea-2);border-radius:var(--r3);overflow:hidden;background:var(--papel);box-shadow:var(--sombra-1)}
 .pantalla__chrome{display:flex;align-items:center;gap:.5rem;padding:.45rem .8rem;background:var(--noche);border-bottom:1px solid var(--rail-linea)}
@@ -3706,6 +3716,14 @@ function recargar(){
   try{ location.reload(); }catch(_){ }
 }
 
+/* El @media print de .ticket oculta todo menos el ticket abierto —
+   por eso hace falta que la ventana del ticket ya esté pintada
+   (render() antes de llamar esto) o se imprime la pantalla anterior. */
+function imprimirTicket(){
+  try{ window.print(); }
+  catch(_){ avisar("No se pudo imprimir", "Prueba con Ctrl+P o revisa que la impresora esté conectada.", "mal"); }
+}
+
 function temaEfectivo(){
   if(D.ajustes.tema !== "auto") return D.ajustes.tema;
   return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
@@ -4055,6 +4073,7 @@ const ACCIONES = {
     D.venta = []; D.ventaPagos = []; D.ventaPanelAbierto = false;
     D.ventana = { v:"ticket", id:d.id, otra:true };
     render();
+    imprimirTicket();
     avisar("Cobrado · " + bs(total), pagoTexto + ". Ya está en Facturación.");
   },
   otraVenta(){ D.ventana = null; D.pantalla = "venta"; D.foco = "q-venta"; render(); },
@@ -4131,6 +4150,7 @@ const ACCIONES = {
         [{ nombre:"Abono al pedido " + p.id, precio:recibeBs, cant:1 }], recibeBs, p.id);
       anotar("Abono al pedido " + p.id + " · " + bs(recibeBs));
       D.ventana = { v:"ticket", id:d.id }; D.cobro = null; render();
+      imprimirTicket();
       avisar("Abono registrado · " + bs(recibeBs), "Queda debiendo " + bs(saldoPedido(p)) + ".");
       return;
     }
@@ -4144,6 +4164,7 @@ const ACCIONES = {
       ({ prodId:l.prodId, nombre:nombreDe(l), precio:precioDe(l), cant:l.cant })), totalPedido(p), p.id);
     anotar("Cobró el pedido " + p.id + " · " + bs(falta));
     D.ventana = { v:"ticket", id:d.id }; D.cobro = null; render();
+    imprimirTicket();
     avisar("Cobrado · pedido " + p.id, vuelto > 0 ? "Vuelto " + bs(vuelto) + ", siempre en bolívares." : forma.nombre + ".");
   },
 
@@ -4299,7 +4320,7 @@ const ACCIONES = {
     D.ventana = null; render();
     avisar("Venta borrada · " + String(d.id).padStart(5, "0"), "Deja de sumar en el cierre. El monto y la tasa se conservan.", "mal");
   },
-  imprimir(){ avisar("Enviado a la tiquera", "Ticket de 55 mm."); },
+  imprimir(){ imprimirTicket(); },
 
   /* Cierre */
   exportar(){ avisar("Día exportado", plural(ventasDelDia().length, "documento", "documentos") + " · " + bs(vendidoHoy())); },
