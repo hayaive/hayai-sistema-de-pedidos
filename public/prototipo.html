@@ -711,11 +711,10 @@ body{overflow-x:hidden;background:var(--papel)}
 .card-nav:hover{border-color:var(--sol);box-shadow:var(--sombra-2);transform:translateY(-2px)}
 .card-nav:active{transform:translateY(0)}
 .card-nav:focus-visible{outline:none;border-color:var(--sol);box-shadow:var(--foco)}
-.card-nav__ic{width:2.4rem;height:2.4rem;border-radius:var(--r2);background:var(--sol-vela);color:var(--sol-70);
-  display:flex;align-items:center;justify-content:center;border:1px solid var(--sol-luz);margin-bottom:.25rem}
-.card-nav__ic .ic{width:1.3rem;height:1.3rem}
+.card-nav__ic{width:3.6rem;height:3.6rem;border-radius:var(--r2);background:var(--sol-vela);color:var(--sol-70);
+  display:flex;align-items:center;justify-content:center;border:1px solid var(--sol-luz);margin-bottom:.35rem}
+.card-nav__ic .ic{width:2.1rem;height:2.1rem}
 .card-nav__n{font-size:1.05rem;font-weight:650;letter-spacing:0}
-.card-nav__v{font-family:var(--voz);color:var(--tinta);font-size:.92rem;line-height:1.35}
 .card-nav__pie{margin-top:.5rem;display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
 .card-nav__tecla{margin-left:auto;color:var(--texto-3)}
 
@@ -1439,7 +1438,7 @@ const PANTALLAS = {
       { q:"cifras",
         t: franjaDelDia(new Date().getHours()) === "noche" ? "Cómo nos fue hoy" : "Cómo está yendo hoy",
         d:"Cuánto se vendió, cuánto es en dólares, cuántos cobros van y cuánto falta por cobrar. Los cuatro salen solos de las ventas del día: nadie los escribe a mano y nadie los puede cambiar." },
-      { q:"menu",   t:"Las tarjetas del sistema", d:"Cada tarjeta es una pantalla. Debajo del nombre dice para qué sirve, y al lado lo que hay pendiente ahí mismo: «4 por cobrar», «4 bajo el mínimo». De un vistazo se sabe adónde hay que entrar." },
+      { q:"menu",   t:"Las tarjetas del sistema", d:"Cada tarjeta es una pantalla: se reconoce por su icono y su nombre. Debajo va lo que hay pendiente ahí mismo —«4 por cobrar», «4 bajo el mínimo»— y a la derecha la tecla que lleva a esa pantalla. De un vistazo se sabe adónde hay que entrar." },
       { q:"accion", t:"Las dos de todos los días", d:"«Venta de mostrador» es para el que llega, compra y se lo lleva: se arma el ticket, se cobra y se imprime ahí mismo. «Montar pedido» es para lo que se encarga hoy y se retira otro día: queda a nombre de alguien, con su abono, su fecha de retiro y la existencia ya apartada." },
       { q:"banda",  t:"La banda de abajo", d:"La tasa del día, desde cuándo está abierta la caja y si hay internet. Toca la tasa y se abre la calculadora." },
       { q:"logo",   t:"Para volver, el logo", d:"Estés donde estés, tocando el logo vuelves a este menú. También sirve el botón de abajo." }
@@ -1567,7 +1566,6 @@ function tarjetaNav(k){
   return '<button class="card-nav" data-a="ir" data-p="' + k + '">' +
     '<span class="card-nav__ic">' + ic(p.ic) + "</span>" +
     '<span class="card-nav__n">' + p.n + "</span>" +
-    '<span class="card-nav__v">' + esc(p.voz) + "</span>" +
     '<span class="card-nav__pie">' + chipDe(k) +
       (p.tecla ? '<span class="tecla card-nav__tecla">' + p.tecla + "</span>" : "") + "</span></button>";
 }
