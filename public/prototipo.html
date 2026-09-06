@@ -714,19 +714,24 @@ body{overflow-x:hidden;background:var(--papel)}
 @media (max-width:620px){
   .menu-fila--2,.menu-fila--3{grid-template-columns:minmax(0,1fr)}
 }
+/* El icono es el protagonista: sin bloque de color detrás, el ámbar
+   vive en el trazo del icono. El fondo tonal solo aparece al pasar
+   por encima, igual que .btn--fantasma, y sobre el círculo del icono
+   nada más — la etiqueta no compite por esa atención. */
 .card-nav{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.6rem;text-align:center;font:inherit;color:#16110B;min-height:9rem;
-  background:linear-gradient(135deg,var(--sol) 0%,var(--sol-90) 100%);border:none;border-radius:1.25rem;
-  padding:1.75rem 1rem;cursor:pointer;
-  box-shadow:0 6px 16px -8px rgba(224,143,22,.6),inset 0 -1px 0 rgba(22,17,11,.14);
-  transition:box-shadow .14s,transform .08s}
-.card-nav:hover{box-shadow:0 10px 26px -8px rgba(224,143,22,.7),inset 0 -1px 0 rgba(22,17,11,.14);transform:translateY(-2px)}
-.card-nav:active{transform:translateY(0) scale(.985)}
-.card-nav:focus-visible{outline:none;box-shadow:var(--foco),0 6px 16px -8px rgba(224,143,22,.6)}
-.card-nav__ic{display:flex;align-items:center;justify-content:center}
-.card-nav__ic .ic{width:2.75rem;height:2.75rem}
-.card-nav__n{font-size:1.1rem;font-weight:700;letter-spacing:0}
-.card-nav__tecla{position:absolute;top:.7rem;right:.7rem}
+  gap:.55rem;text-align:center;font:inherit;color:var(--texto);
+  background:none;border:none;border-radius:var(--r3);padding:1rem .75rem;cursor:pointer;
+  transition:transform .06s}
+.card-nav:active{transform:translateY(1px)}
+.card-nav:focus-visible{outline:none;box-shadow:var(--foco)}
+.card-nav__ic{display:flex;align-items:center;justify-content:center;width:4.5rem;height:4.5rem;
+  border-radius:var(--rf);color:var(--sol-70);background:transparent;
+  transition:background .14s,color .14s}
+.card-nav:hover .card-nav__ic{background:var(--sol-vela);color:var(--sol-90)}
+.card-nav:active .card-nav__ic{background:var(--sol-luz)}
+.card-nav__ic .ic{width:3rem;height:3rem}
+.card-nav__n{font-size:.95rem;font-weight:650;letter-spacing:0}
+.card-nav__tecla{position:absolute;top:.15rem;right:.15rem}
 
 /* La salida, siempre en el mismo sitio y siempre a la vista */
 .volver-menu{position:fixed;left:50%;transform:translateX(-50%);bottom:4.1rem;z-index:27;
