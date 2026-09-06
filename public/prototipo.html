@@ -1118,7 +1118,7 @@ const D = {
   docAbierto: null,
   clienteAbierto: null,
   borrador: null,     // pedido en construcción
-  seqDoc: 148,
+  seqDoc: 0,
   seqPedido: 1046,
   seqProd: 100,
   seqCliente: 100,
@@ -1258,32 +1258,10 @@ function sembrar(){
       estado:"anulado", retiro:hoyMas(-1,9,0), canal:"mostrador", nota:"", tasa:T, tasaTipo:"oficial" }
   ];
 
-  const doc = (id, h, m, cliente, pago, lineas, pedidoId) => ({
-    id, hora:hoyMas(0, h, m), cliente, pago, lineas,
-    total: lineas.reduce((s, l) => s + l.cant * l.precio, 0),
-    tasa:T, tasaTipo:"oficial", anulado:false, pedidoId: pedidoId || null
-  });
-  const P = id => D.productos.find(p => p.id === id);
-  const L = (id, cant) => ({ prodId:id, nombre:P(id).nombre, precio:precioBaseBs(P(id)), cant });
-
-  D.documentos = [
-    doc(147, 15, 31, "Contado", "Punto de venta",     [L(6,2), L(3,4)]),
-    doc(146, 15, 20, "Contado", "Pago móvil",         [L(2,6), L(1,8)]),
-    doc(145, 15, 4,  "Panadería La Cruz", "Efectivo en bolívares", [L(6,20)], 1041),
-    doc(144, 14, 51, "Contado", "Efectivo en bolívares", [L(1,4), L(5,2)]),
-    doc(143, 11, 4,  "Contado", "Efectivo en bolívares", [L(6,1)]),
-    doc(142, 9, 12,  "Contado", "Punto de venta",     [L(7,3), L(3,2)])
-  ];
-  D.documentos[4].anulado = true;
-
-  const dm = id => D.documentos.find(x => x.id === id).total;
-  D.bitacora = [
-    { hora:hoyMas(0,15,31), usuario:"Yorbin Rojas", texto:"Venta de mostrador 00147 · " + bs(dm(147)) },
-    { hora:hoyMas(0,15,20), usuario:"Yorbin Rojas", texto:"Venta de mostrador 00146 · " + bs(dm(146)) },
-    { hora:hoyMas(0,15,4),  usuario:"Yorbin Rojas", texto:"Cobró el pedido 1041 · " + bs(dm(145)) },
-    { hora:hoyMas(0,14,15), usuario:"María Pérez",  texto:"Entró a inventario: 12 de Harina de trigo, saco" },
-    { hora:hoyMas(0,11,4),  usuario:"Yorbin Rojas", texto:"Venta borrada 00143 · " + bs(dm(143)) }
-  ];
+  /* Sin ventas ni cierre de ejemplo: eran de prueba y el catálogo ya es
+     el real del cliente, así que el mostrador arranca en Bs 0 vendido. */
+  D.documentos = [];
+  D.bitacora = [];
   recalcularComprometido();
 }
 
@@ -2621,7 +2599,9 @@ function vistaAjustes(){
           ? '<span class="rojo">El navegador no acepta más datos (' + esc(D.guardadoFallo) + "). Exporta el día antes de seguir.</span>"
           : (D.guardado ? "Última vez, " + fechaHora(D.guardado) + "." : "Todavía no se ha guardado nada.")) +
       " Como vive aquí y no en la nube, otro aparato tiene sus propios datos, y borrar los del navegador se los lleva.</p>" +
-      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
+      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
+        ic("papelera") + "Borrar ventas y cierre de prueba</button>" +
+      '<button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
         ic("papelera") + "Empezar de cero</button></div></div>" +
 
       '<div class="tarj"><div class="tarj__cab">' + ic("sinred","ambar") + "<h4>Conexión</h4></div>" +
@@ -2727,6 +2707,7 @@ function ventanaHTML(){
   if(v === "existencia")     return ventExistencia();
   if(v === "usuario")        return ventUsuario();
   if(v === "empezarCero")    return ventEmpezarCero();
+  if(v === "limpiarVentas")  return ventLimpiarVentas();
   if(v === "permisos")       return ventPermisos();
   if(v === "puerta")         return ventPuerta();
   if(v === "actualizar")     return ventActualizar();
@@ -3230,6 +3211,17 @@ function ventEmpezarCero(){
       "Si lo que quieres es guardar lo de hoy antes de borrar, cierra esto y usa <b>Exportar el día</b> en Ventas y cierre.</p>" +
     '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
     '<button class="btn btn--peligro" style="margin-left:auto" data-a="confirmarCero">Borrar y empezar de cero</button></div></div>';
+}
+function ventLimpiarVentas(){
+  return '<div class="vent vent--angosta">' + cab("¿Borrar las ventas y el cierre de prueba?", "") +
+    '<div class="vent__cuerpo">' +
+      '<div class="aviso aviso--sol"><span class="aviso__ic">' + ic("alerta") + "</span><div>" +
+      '<p class="aviso__d">Se van los ' + plural(D.documentos.length, "documento", "documentos") +
+        " de Facturación y todo lo que suma el cierre. No se puede deshacer.</p></div></div>" +
+      '<p class="min tenue" style="margin-top:.8rem">El inventario, los precios, los clientes, los usuarios y los pedidos ' +
+      "no se tocan — esto es solo lo ya cobrado.</p>" +
+    '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
+    '<button class="btn btn--peligro" style="margin-left:auto" data-a="confirmarLimpiarVentas">Borrar ventas y cierre</button></div></div>';
 }
 
 /* ── Los permisos de una persona ───────────────────────────────── */
@@ -4341,6 +4333,16 @@ const ACCIONES = {
     D.pwa.recargando = true;
     recargar();
   },
+  confirmarLimpiarVentas(){
+    const n = D.documentos.length;
+    D.documentos = [];
+    D.seqDoc = 0;
+    anotar("Borró " + plural(n, "venta", "ventas") + " y el cierre de prueba");
+    D.ventana = null;
+    guardar();
+    render();
+    avisar("Ventas y cierre borrados", "Facturación y el cierre arrancan en Bs 0.");
+  },
   abrirApp(){ abrirLaApp(); },
   puerta(){ D.pwa.puertaVista = false; abrirPuerta(); },
   instalar(){
@@ -4480,6 +4482,7 @@ const ACCION_MODULO = {
   rol:"usuarios", guardarUsuario:"usuarios", permiso:"usuarios",
 
   guardarTasas:"ajustes", tasaPref:"ajustes", efectivo:"ajustes", moneda:"ajustes", conexion:"ajustes",
+  confirmarLimpiarVentas:"ajustes",
   guardarTipoPrecio:"ajustes", borrarTipoPrecio:"ajustes"
 };
 
