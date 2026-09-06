@@ -714,26 +714,28 @@ body{overflow-x:hidden;background:var(--papel)}
 @media (max-width:620px){
   .menu-fila--2,.menu-fila--3{grid-template-columns:minmax(0,1fr)}
 }
-/* El icono es el protagonista: sin bloque de color detrás, el ámbar
-   vive en el trazo del icono. El fondo tonal solo aparece al pasar
-   por encima, igual que .btn--fantasma, y sobre el círculo del icono
-   nada más — la etiqueta no compite por esa atención. */
+/* La misma superficie que .regla-fila arriba en Inicio (borde var(--linea),
+   var(--r3), var(--sup)): el tile vuelve a ser una unidad reconocible, pero
+   con el mismo tratamiento "tarjeta liviana" que ya usa el resto de Inicio,
+   no un bloque de color propio. El icono vive en su propio pocillo tonal
+   —ámbar clarísimo, var(--sol-vela)— así que sigue siendo protagonista sin
+   que el ámbar sea el fondo de toda la tarjeta. */
 .card-nav{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.55rem;text-align:center;font:inherit;color:var(--texto);
-  background:none;border:none;border-radius:var(--r3);padding:1rem .75rem;cursor:pointer;
-  transition:transform .06s}
-.card-nav:active{transform:translateY(1px)}
+  gap:.75rem;text-align:center;font:inherit;color:var(--texto);
+  background:var(--sup);border:1px solid var(--linea);border-radius:var(--r3);
+  padding:1.5rem 1rem;cursor:pointer;
+  transition:background .14s,border-color .14s,box-shadow .14s,transform .06s}
+.card-nav:hover{background:var(--sup-2);border-color:var(--linea-2);box-shadow:var(--sombra-1)}
+.card-nav:active{background:var(--sup-3);transform:translateY(1px)}
 .card-nav:focus-visible{outline:none;box-shadow:var(--foco)}
 .card-nav[disabled],.card-nav.es-off{opacity:.42;pointer-events:none}
-/* El botón puede ocupar toda la celda del grid (buen target táctil),
-   pero el badge del atajo va anclado al círculo del icono —no al
-   botón entero—, si no queda flotando lejos del icono en celdas
-   anchas apenas el fondo deja de ser un bloque sólido. */
+/* El botón ocupa toda la celda del grid (buen target táctil), pero el
+   badge del atajo va anclado al pocillo del icono —no al botón entero—,
+   si no queda flotando lejos del icono en celdas anchas. */
 .card-nav__ic{position:relative;display:flex;align-items:center;justify-content:center;width:4.5rem;height:4.5rem;
-  border-radius:var(--rf);color:var(--sol-70);background:transparent;
-  transition:background .14s,color .14s,transform .14s}
-.card-nav:hover .card-nav__ic{background:var(--sol-vela);color:var(--sol-90);transform:scale(1.05)}
-.card-nav:active .card-nav__ic{background:var(--sol-luz);transform:scale(1)}
+  border-radius:var(--r2);color:var(--sol-70);background:var(--sol-vela);
+  transition:background .14s,color .14s}
+.card-nav:hover .card-nav__ic{background:var(--sol-luz);color:var(--sol-90)}
 .card-nav__ic .ic{width:3rem;height:3rem}
 /* Compensación óptica: misma caja de 48px, pero tabla/recibo (más
    angostos en la rejilla de 24) y candado/ajustes (trazo con menos
@@ -743,7 +745,10 @@ body{overflow-x:hidden;background:var(--papel)}
 .card-nav__ic .ic--tabla,.card-nav__ic .ic--recibo{transform:scale(1.1)}
 .card-nav__ic .ic--candado{transform:scale(1.15)}
 .card-nav__ic .ic--ajustes{transform:scale(1.08)}
-.card-nav__n{font-size:.95rem;font-weight:650;letter-spacing:0}
+/* Alto reservado para dos líneas: así "Ventas y cierre" no hace que
+   su tarjeta sea más alta que la de "Venta". */
+.card-nav__n{font-size:.95rem;font-weight:650;letter-spacing:0;line-height:1.25;
+  min-height:2.4rem;display:flex;align-items:center;justify-content:center}
 .card-nav__tecla{position:absolute;top:-.3rem;right:-.3rem;pointer-events:none}
 
 /* La salida, siempre en el mismo sitio y siempre a la vista */
