@@ -1,0 +1,48 @@
+{
+  "name": "HAYAI Mostrador",
+  "short_name": "HAYAI",
+  "description": "Punto de venta y encargos para la panadería.",
+  "id": "./prototipo.html",
+  "start_url": "./prototipo.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "es-VE",
+  "dir": "ltr",
+  "background_color": "#16110B",
+  "theme_color": "#EF9D25",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "./icono.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icono.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "./manifest.webmanifest"
+    }
+  ],
+  "prefer_related_applications": false,
+  "protocol_handlers": [
+    {
+      "protocol": "web+hayai",
+      "url": "./prototipo.html?abrir=%s"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+}
