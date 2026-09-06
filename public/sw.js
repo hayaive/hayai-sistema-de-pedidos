@@ -21,7 +21,9 @@ const CACHE   = "hayai-mostrador-" + VERSION;
 
 /* Lo que hace falta para abrir. Añade aquí lo que sirvas aparte. */
 const BASICOS = [
-  "./",
+  /* La raíz no se guarda: ahora redirige a prototipo.html y una respuesta
+     redirigida no se puede meter en la caché. Sin internet, el manejador
+     de abajo resuelve "/" con el documento guardado igual. */
   "./prototipo.html",
   "./manifest.webmanifest",
   "./icono.png"

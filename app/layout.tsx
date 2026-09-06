@@ -1,34 +1,15 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
-
+/* Este cascarón de Next existe para una sola cosa: servir el mostrador.
+   HAYAI vive entero en public/prototipo.html —un archivo suelto, con su
+   propio CSS y su propia letra— así que aquí no hay ni tema ni tipografía
+   que imponer: lo que sobrara se pelearía con las suyas. */
 export const metadata: Metadata = {
-  title: "Donezo - Project Management Dashboard",
-  description: "Plan, prioritize, and accomplish your tasks with ease",
-  generator: "v0.app",
-  icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
-  },
+  title: "HAYAI Mostrador",
+  description: "Punto de venta y encargos para la panadería.",
+  icons: { icon: "/icono.png", apple: "/icono.png" },
 }
 
 export default function RootLayout({
@@ -37,13 +18,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
-        <ThemeProvider defaultTheme="light" storageKey="tasko-theme">
-          {children}
-        </ThemeProvider>
-        <Analytics />
-      </body>
+    <html lang="es-VE" translate="no">
+      <body>{children}</body>
     </html>
   )
 }
