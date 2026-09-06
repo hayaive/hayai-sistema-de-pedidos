@@ -1068,6 +1068,13 @@ const $  = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const num = (n, d = 2) => Number(n || 0).toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d });
 const bs  = n => "Bs " + num(n);
+/* Precio en dólares * tasa del día casi nunca da un número redondo:
+   esto es lo que va DENTRO de un <input> editable (sin separador de
+   miles, con punto decimal), a diferencia de num()/bs() que son para
+   mostrar en pantalla. Sin esto, "Recibe" y compañía terminan con
+   media docena de decimales de basura de coma flotante. */
+const round2 = n => Math.round((Number(n) || 0) * 100) / 100;
+const redondear2 = n => round2(n).toFixed(2);
 const ic  = (n, c) => '<svg class="ic' + (c ? " " + c : "") + '"><use href="#i-' + n + '"/></svg>';
 const plural = (n, uno, varios) => n + " " + (n === 1 ? uno : varios);
 
@@ -2111,7 +2118,7 @@ function vistaVenta(){
         return '<div class="campo" style="margin-bottom:0"><label class="campo__et">' + esc(f.nombre) + '</label>' +
           '<div class="grupo-ent"><span class="grupo-ent__fijo">' + (enUsd ? "$" : "Bs") + '</span>' +
           '<input class="ent ent--cifra" id="pago-monto-' + pg.id + '" data-a="pagoMonto" data-id="' + pg.id +
-          '" inputmode="decimal" value="' + pg.monto + '"></div></div>';
+          '" inputmode="decimal" value="' + redondear2(pg.monto) + '"></div></div>';
       }).join("") + "</div>" +
       '<div class="tot-fila" style="margin-top:.5rem"><span>' + (faltaBs > 0 ? "Falta" : "Vuelto") + "</span>" +
       '<b class="' + (faltaBs > 0 ? "rojo" : "verde") + '">' + bs(Math.abs(faltaBs)) + "</b></div>"
@@ -2883,7 +2890,7 @@ function vistaMontar(){
     '<p class="min tenue">Si deja algo adelantado, escríbelo aquí. Si no deja nada, déjalo en cero.</p>' +
     '<div class="campo"><label class="campo__et" for="b-abono">Cuánto abona ahora</label>' +
     '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
-    '<input class="ent ent--lg ent--cifra" id="b-abono" data-a="bAbono" value="' + b.abono +
+    '<input class="ent ent--lg ent--cifra" id="b-abono" data-a="bAbono" value="' + redondear2(b.abono) +
     '" inputmode="decimal" max="' + total + '"></div>' +
     (b.abonoTope
       ? '<p class="campo__ay ambar">' + ic("info","ic--sm") + " No puede abonar más de lo que cuesta el pedido: quedó en " + bs(total) + ".</p>"
@@ -2987,7 +2994,7 @@ function ventDejarPedido(){
 function ventCobrar(){
   const p = D.pedidos.find(x => x.id === Number(D.ventana.id));
   const falta = saldoPedido(p);
-  if(!D.cobro) D.cobro = { pago: formasPago()[0].id, recibe: falta };
+  if(!D.cobro) D.cobro = { pago: formasPago()[0].id, recibe: round2(falta) };
   const enUsd = D.cobro.pago === "efectivo_usd";
   const recibeBs = enUsd ? D.cobro.recibe * D.tasas.oficial : D.cobro.recibe;
   const vuelto = Math.max(0, recibeBs - falta);
@@ -3006,7 +3013,7 @@ function ventCobrar(){
       '<div class="rejilla-2">' +
         '<div class="campo"><label class="campo__et">Recibe</label><div class="grupo-ent">' +
         '<span class="grupo-ent__fijo">' + (enUsd ? "$" : "Bs") + "</span>" +
-        '<input class="ent ent--lg ent--cifra" id="cobro-recibe" data-a="cobroRecibe" value="' + D.cobro.recibe + '" inputmode="decimal"></div>' +
+        '<input class="ent ent--lg ent--cifra" id="cobro-recibe" data-a="cobroRecibe" value="' + redondear2(D.cobro.recibe) + '" inputmode="decimal"></div>' +
         (enUsd ? '<p class="campo__ay" id="cobro-eq">Equivale a ' + bs(recibeBs) + "</p>" : "") + "</div>" +
         '<div class="campo"><label class="campo__et">Vuelto</label><div class="grupo-ent">' +
         '<span class="grupo-ent__fijo">Bs</span><input class="ent ent--lg ent--cifra" id="cobro-vuelto" value="' + num(vuelto) + '" readonly></div>' +
@@ -3131,12 +3138,12 @@ function ventProducto(){
       D.tiposPrecio.map(t =>
         '<div class="campo"><label class="campo__et">' + esc(t.nombre) + '</label><div class="grupo-ent">' +
         '<span class="grupo-ent__fijo">$</span><input class="ent ent--cifra" id="pr-precio-' + t.id +
-        '" inputmode="decimal" value="' + (precios[t.id] != null ? precios[t.id] : 0) + '"></div></div>').join("") +
+        '" inputmode="decimal" value="' + redondear2(precios[t.id] != null ? precios[t.id] : 0) + '"></div></div>').join("") +
       "</div></div>" +
       '<div class="campo"><label class="campo__et">Precio fijo en bolívares <span class="tenue" style="font-weight:400">' +
       "— opcional, anula los precios en dólares de arriba</span></label>" +
       '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span><input class="ent ent--cifra" id="pr-preciofijo" inputmode="decimal" value="' +
-      (edita && edita.precioFijoBs != null ? edita.precioFijoBs : "") + '" placeholder="vacío = usa los de arriba"></div>' +
+      (edita && edita.precioFijoBs != null ? redondear2(edita.precioFijoBs) : "") + '" placeholder="vacío = usa los de arriba"></div>' +
       '<p class="campo__ay">Para lo poco que se cobra en un monto fijo de bolívares, como los ponquesitos decorados: no cambia con la tasa del día.</p></div>' +
       '<div id="pr-aviso"></div>' +
     '</div><div class="vent__pie">' +
@@ -4035,7 +4042,7 @@ const ACCIONES = {
     const i = D.ventaPagos.findIndex(p => p.id === ds.id);
     if(i >= 0){ D.ventaPagos.splice(i, 1); render(); return; }
     const faltaBs = Math.max(0, totalVenta() - sumaPagosBs(D.ventaPagos));
-    const monto = ds.id === "efectivo_usd" ? Math.round(faltaBs / D.tasas.oficial * 100) / 100 : Math.round(faltaBs * 100) / 100;
+    const monto = round2(ds.id === "efectivo_usd" ? faltaBs / D.tasas.oficial : faltaBs);
     D.ventaPagos.push({ id: ds.id, monto });
     D.foco = "pago-monto-" + ds.id;
     render();
@@ -4133,7 +4140,7 @@ const ACCIONES = {
   cobroRecibe(ds, el){ D.cobro.recibe = aNumero(el.value); D.foco = el.id; render(); },
   cobroMonto(ds){
     const enUsd = D.cobro.pago === "efectivo_usd";
-    D.cobro.recibe = enUsd ? Number(ds.v) / D.tasas.oficial : Number(ds.v);
+    D.cobro.recibe = round2(enUsd ? Number(ds.v) / D.tasas.oficial : Number(ds.v));
     render();
   },
   cobrarPedido(ds){
