@@ -2189,6 +2189,7 @@ function detallePedido(p){
   let acciones = "";
   if(p.estado === "por_cobrar")
     acciones = '<button class="btn btn--sol btn--lg btn--bloque" data-a="ventana" data-v="cobrar" data-id="' + p.id + '">Cobrar e imprimir</button>' +
+      '<button class="btn btn--contorno btn--sm" style="margin-top:.5rem;width:100%" data-a="editarPedido" data-id="' + p.id + '">' + ic("lapiz","ic--sm") + "Editar pedido</button>" +
       '<button class="btn btn--fantasma btn--sm" style="margin-top:.5rem;width:100%" data-a="ventana" data-v="anularPedido" data-id="' + p.id + '">Anular el pedido</button>';
   else if(p.estado === "cobrado")
     acciones = '<button class="btn btn--sol btn--lg btn--bloque" data-a="entregar" data-id="' + p.id + '">Marcar como entregado</button>';
@@ -2711,7 +2712,8 @@ function borradorVivo(){
 function botonesMontar(){
   const b = borradorVivo();
   return '<button class="btn btn--fantasma" data-a="cancelarMontar">Cancelar</button>' +
-    '<button class="btn btn--sol" data-a="bGuardar"' + (b.lineas.length ? "" : " disabled") + ">Guardar el pedido</button>";
+    '<button class="btn btn--sol" data-a="bGuardar"' + (b.lineas.length ? "" : " disabled") + ">" +
+    (b.editando ? "Guardar los cambios" : "Guardar el pedido") + "</button>";
 }
 
 /* Una tarjeta por paso. La siguiente no se abre hasta que la anterior está lista. */
@@ -3896,6 +3898,19 @@ const ACCIONES = {
 
   /* Pedidos */
   verPedido(ds){ D.pedidoAbierto = Number(ds.id); D.pantalla = "pedidos"; D.ventana = null; render(); },
+  editarPedido(ds){
+    const p = D.pedidos.find(x => x.id === Number(ds.id));
+    if(!p) return;
+    D.borrador = {
+      lineas: p.lineas.map(l => ({ prodId:l.prodId, nombre:l.nombre, precio:l.precio, cant:l.cant })),
+      q:"", canal:p.canal, dia:"otro", fecha: iso(p.retiro),
+      hora: String(p.retiro.getHours()).padStart(2, "0") + ":" + String(p.retiro.getMinutes()).padStart(2, "0"),
+      abono:p.abonado, nota:p.nota || "", clienteId:p.clienteId, qCliente:"", editando:p.id
+    };
+    D.borradorVolver = "pedidos"; D.destino = null; D.ventana = null;
+    D.pantalla = "montar"; D.foco = "q-bcliente";
+    render();
+  },
   filtroPedidos(ds){ D.filtro.pedidos = ds.v; render(); },
   limpiarPedidos(){ D.q.pedidos = ""; D.filtro.pedidos = "todos"; render(); },
   entregar(ds){
@@ -4179,8 +4194,23 @@ const ACCIONES = {
   bGuardar(){
     const b = D.borrador;
     if(!b.lineas.length){ avisar("El pedido está vacío", "Vuelve al paso 1 y pon al menos un producto.", "mal"); return; }
-    const p = { id: ++D.seqPedido, clienteId:b.clienteId, lineas:b.lineas.map(l => ({ prodId:l.prodId, nombre:l.nombre, precio:l.precio, cant:l.cant })),
-      abonado: Math.min(b.abono, totalBorrador()), estado:"por_cobrar", retiro: fechaRetiro(),
+    const abonado = Math.min(b.abono, totalBorrador());
+    const lineas = b.lineas.map(l => ({ prodId:l.prodId, nombre:l.nombre, precio:l.precio, cant:l.cant }));
+
+    if(b.editando){
+      const p = D.pedidos.find(x => x.id === b.editando);
+      Object.assign(p, { clienteId:b.clienteId, lineas, abonado, retiro: fechaRetiro(), canal: b.canal, nota: b.nota });
+      recalcularComprometido();
+      anotar("Editó el pedido " + p.id + " · " + bs(totalPedido(p)) + (p.abonado ? " · abonó " + bs(p.abonado) : ""));
+      D.borrador = null; D.borradorVolver = null; D.destino = null;
+      D.ventana = null; D.pantalla = "pedidos"; D.pedidoAbierto = p.id;
+      render();
+      avisar("Pedido " + p.id + " actualizado", "Los cambios ya quedaron guardados.");
+      return;
+    }
+
+    const p = { id: ++D.seqPedido, clienteId:b.clienteId, lineas,
+      abonado, estado:"por_cobrar", retiro: fechaRetiro(),
       canal: b.canal, nota: b.nota, tasa: D.tasas.oficial, tasaTipo:"oficial" };
     D.pedidos.unshift(p);
     recalcularComprometido();
@@ -4205,7 +4235,7 @@ const ACCION_MODULO = {
   cobrarVenta:"venta", otraVenta:"venta", cobrarPedido:"venta", cobroPago:"venta",
   cobroRecibe:"venta", cobroMonto:"venta",
 
-  montar:"pedidos", cancelarMontar:"pedidos", dejarPedido:"pedidos", entregar:"pedidos",
+  montar:"pedidos", editarPedido:"pedidos", cancelarMontar:"pedidos", dejarPedido:"pedidos", entregar:"pedidos",
   anularPedido:"pedidos", bAgregar:"pedidos", bMenos:"pedidos", bCanal:"pedidos",
   bAbonoRapido:"pedidos", limpiarBorrador:"pedidos", bDia:"pedidos", bFecha:"pedidos",
   bHora:"pedidos", bAbono:"pedidos", bNota:"pedidos", bCliente:"pedidos", bGuardar:"pedidos",
