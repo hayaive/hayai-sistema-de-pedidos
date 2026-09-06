@@ -694,13 +694,22 @@ body{overflow-x:hidden;background:var(--papel)}
   .banda-luz .chip{font-size:.8rem}}
 
 /* ── El menú: tarjetas navegables ──────────────────────────────── */
-.menu-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(15.5rem,1fr));gap:.85rem}
-.menu-fila{display:grid;gap:.85rem;margin-bottom:.85rem}
+/* Las tarjetas no pasan de 400 px. En una pantalla ancha, estiradas se
+   vuelven franjas larguísimas con un icono perdido en la esquina: caben
+   mejor a lo ancho de una mano. Se cortan las columnas, no la tarjeta,
+   para que dentro de una fila todas midan lo mismo y queden juntas. */
+.menu-fila{display:grid;gap:.85rem;margin-bottom:.85rem;justify-content:start}
 .menu-fila:last-child{margin-bottom:0}
-.menu-fila--2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.menu-fila--3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.menu-fila--2{grid-template-columns:repeat(2,minmax(0,400px))}
+.menu-fila--3{grid-template-columns:repeat(3,minmax(0,400px))}
+.card-nav{max-width:400px}
 @media (max-width:900px){
+  /* Aquí ya no sobra ancho: las columnas reparten lo que hay y el tope
+     de 400 px deja de mandar por sí solo. */
   .menu-fila--3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .menu-fila--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .menu-fila{justify-content:stretch}
+  .card-nav{max-width:none}
 }
 @media (max-width:620px){
   .menu-fila--2,.menu-fila--3{grid-template-columns:minmax(0,1fr)}
