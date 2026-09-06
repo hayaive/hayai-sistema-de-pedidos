@@ -50,6 +50,29 @@ pnpm install
 pnpm dev
 ```
 
+## Dónde se guardan los datos
+
+Todo —ventas, pedidos, inventario, clientes, usuarios y ajustes— se guarda
+en el propio aparato, en el almacén del navegador (`localStorage`, bajo la
+llave `hayai-mostrador`). No hace falta servidor ni internet: se cierra el
+navegador, se vuelve a abrir y está donde quedó.
+
+Lo que **no** se guarda es lo de la pantalla: en qué vista estabas, qué
+ventana tenías abierta, qué habías escrito en un buscador. Eso se arma solo
+al abrir.
+
+Consecuencias que conviene tener claras:
+
+- Cada aparato tiene sus propios datos. **No se sincronizan entre sí.**
+- Borrar los datos del navegador se los lleva. Lo mismo una ventana privada.
+- La sesión abierta se recupera al recargar, pero **caduca a las 12 horas**:
+  un mostrador es compartido y no debe quedar abierto de un día para otro.
+- La bitácora se poda a las 400 líneas más recientes para no llenar el
+  almacén. Un día de trabajo ocupa unos 40 KB de los ~5 MB disponibles.
+
+En Ajustes → *Dónde se guarda* se ve cuándo fue el último guardado y está
+el botón **Empezar de cero**, que borra todo y devuelve los datos de ejemplo.
+
 ## Quién ve qué
 
 Cada rol entra solo a sus pantallas. La pantalla de entrada no da pistas de

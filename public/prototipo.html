@@ -1101,6 +1101,8 @@ const D = {
   tasaError: "",
   euroCalculado: false,     // salió de la cuenta, no de una fuente oficial
   euroAMano: false,         // alguien lo escribió: no se vuelve a pisar
+  guardado: null,           // cuándo se guardó por última vez
+  guardadoFallo: "",        // por qué no se pudo, si es que no se pudo
 
   /* Arranca en claro a propósito: el mostrador se ve de día y con luz
      encima. Quien quiera noche lo cambia en Ajustes o con el botón de
@@ -1330,6 +1332,155 @@ function seRetiraHoy(){
 
 function anotar(texto){
   D.bitacora.unshift({ hora:new Date(), usuario: D.usuario ? D.usuario.nombre : "Sistema", texto });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GUARDAR
+   Todo vive en este aparato, en el almacén del navegador. No hace falta
+   servidor ni internet: se cobra, se cierra el navegador, se vuelve a
+   abrir y está todo donde quedó.
+
+   Lo que se guarda es lo del negocio. Lo de la pantalla —en qué vista
+   estás, qué ventana tienes abierta, qué escribiste en un buscador— no:
+   eso se arma solo al abrir y guardarlo solo daría rarezas al volver.
+   ═══════════════════════════════════════════════════════════════ */
+const LLAVE = "hayai-mostrador";
+const FORMATO = 1;          // si cambia la forma de los datos, sube este número
+const TOPE_BITACORA = 400;  // el almacén no es infinito: la bitácora se poda
+const HORAS_SESION = 12;    // pasado eso, hay que volver a entrar
+
+/* Las fechas viajan como texto y hay que devolverlas a Date. Se hace por
+   nombre y sitio, nunca a lo bruto: en el borrador de un pedido "hora" es
+   un texto ("16:00") y convertirlo lo rompería. */
+function aFecha(v){
+  if(!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function estadoGuardable(){
+  return {
+    formato: FORMATO,
+    cuando: new Date().toISOString(),
+    /* Quién está adentro. Se guarda para que recargar en medio de una
+       venta no eche a nadie; caduca sola, que un mostrador es compartido. */
+    sesion: D.usuario ? { id: D.usuario.id, desde: D.entradaHora } : null,
+    negocio: D.negocio,
+    usuarios: D.usuarios,
+    productos: D.productos,
+    clientes: D.clientes,
+    pedidos: D.pedidos,
+    documentos: D.documentos,
+    bitacora: D.bitacora.slice(0, TOPE_BITACORA),
+    ajustes: D.ajustes,
+    tasas: D.tasas,
+    tasaFecha: D.tasaFecha,
+    tasaEstado: D.tasaEstado,
+    euroAMano: D.euroAMano,
+    euroCalculado: D.euroCalculado,
+    seqDoc: D.seqDoc, seqPedido: D.seqPedido, seqProd: D.seqProd, seqCliente: D.seqCliente,
+    /* La venta a medio armar y el pedido a medio montar también: si la
+       tableta se duerme o se recarga, nadie tiene que empezar de nuevo. */
+    venta: D.venta,
+    ventaPago: D.ventaPago,
+    borrador: D.borrador
+  };
+}
+
+function escribir(texto){
+  try{
+    localStorage.setItem(LLAVE, texto);
+    return "";
+  }catch(e){
+    return (e && e.name) ? e.name : "no se pudo escribir";
+  }
+}
+
+/* Después de borrar todo no se vuelve a escribir: si no, el guardado que
+   quedó pendiente —o el de cerrar la pestaña— resucitaría lo borrado
+   antes de que la recarga termine. */
+let noGuardarMas = false;
+
+function guardarYa(){
+  if(noGuardarMas) return false;
+  let fallo = escribir(JSON.stringify(estadoGuardable()));
+  if(fallo){
+    /* Casi siempre es que se llenó. Se poda la bitácora —lo más viejo y
+       lo menos crítico— y se intenta una vez más antes de rendirse. */
+    D.bitacora = D.bitacora.slice(0, 80);
+    fallo = escribir(JSON.stringify(estadoGuardable()));
+  }
+  if(fallo){
+    if(!D.guardadoFallo){
+      D.guardadoFallo = fallo;
+      avisar("No se está guardando", "El almacén de este navegador no acepta más. Exporta el día y avisa.", "mal");
+    }
+    return false;
+  }
+  D.guardadoFallo = "";
+  D.guardado = new Date();
+  return true;
+}
+
+/* Se guarda un instante después de cada cambio, no en cada uno: entre
+   tocar «+» cinco veces seguidas, escribir una sola vez basta. */
+let tempoGuardar = null;
+function guardar(){
+  if(noGuardarMas || tempoGuardar) return;
+  tempoGuardar = setTimeout(() => { tempoGuardar = null; guardarYa(); }, 500);
+}
+
+function cargar(){
+  let crudo;
+  try{ crudo = localStorage.getItem(LLAVE); }catch(_){ return false; }
+  if(!crudo) return false;
+
+  let g;
+  try{ g = JSON.parse(crudo); }catch(_){ return false; }
+  if(!g || g.formato !== FORMATO) return false;   // otra forma: se siembra de nuevo
+
+  try{
+    if(g.negocio)   D.negocio   = g.negocio;
+    if(g.usuarios)  D.usuarios  = g.usuarios;
+    if(g.productos) D.productos = g.productos;
+    if(g.clientes)  D.clientes  = g.clientes;
+    if(g.pedidos)   D.pedidos   = g.pedidos.map(p => Object.assign({}, p, { retiro: aFecha(p.retiro) }));
+    if(g.documentos)D.documentos= g.documentos.map(d => Object.assign({}, d, { hora: aFecha(d.hora) }));
+    if(g.bitacora)  D.bitacora  = g.bitacora.map(b => Object.assign({}, b, { hora: aFecha(b.hora) }));
+    if(g.ajustes)   D.ajustes   = Object.assign({}, D.ajustes, g.ajustes);
+    if(g.tasas)     D.tasas     = Object.assign({}, D.tasas, g.tasas);
+    D.tasaFecha     = aFecha(g.tasaFecha);
+    if(g.tasaEstado)D.tasaEstado= g.tasaEstado;
+    D.euroAMano     = !!g.euroAMano;
+    D.euroCalculado = !!g.euroCalculado;
+    ["seqDoc","seqPedido","seqProd","seqCliente"].forEach(k => {
+      if(typeof g[k] === "number") D[k] = g[k];
+    });
+    D.venta      = Array.isArray(g.venta) ? g.venta : [];
+    D.ventaPago  = g.ventaPago || null;
+    D.borrador   = g.borrador || null;
+
+    /* La sesión se recupera solo si no se ha enfriado. */
+    if(g.sesion && g.sesion.id){
+      const horas = (Date.now() - (g.sesion.desde || 0)) / 3600000;
+      const u = D.usuarios.find(x => x.id === g.sesion.id);
+      if(u && horas < HORAS_SESION){
+        D.usuario = u;
+        D.entradaHora = g.sesion.desde || Date.now();
+      }
+    }
+    D.guardado = aFecha(g.cuando);
+    return true;
+  }catch(_){
+    /* Datos rotos: mejor arrancar limpio que a medias. */
+    return false;
+  }
+}
+
+function olvidarTodo(){
+  noGuardarMas = true;
+  if(tempoGuardar){ clearTimeout(tempoGuardar); tempoGuardar = null; }
+  try{ localStorage.removeItem(LLAVE); }catch(_){ }
 }
 
 /* ── Notificaciones ────────────────────────────────────────────── */
@@ -2376,6 +2527,20 @@ function vistaAjustes(){
         '<button class="btn btn--sol btn--sm" style="margin-top:.5rem" data-a="nada">Cobrar</button></div>' +
       '<p class="nota-pie" style="margin-top:.6rem">Se guarda por separado. En teléfono arranca en pequeña, porque la pantalla es la mitad de ancha.</p></div>' +
 
+      '<div class="tarj"><div class="tarj__cab">' + ic("caja","ambar") + "<h4>Dónde se guarda</h4>" +
+      (D.guardadoFallo
+        ? '<span class="chip chip--rojo chip--xs">No se está guardando</span>'
+        : '<span class="chip chip--verde chip--xs">Guardado</span>') + "</div>" +
+      '<p class="min tenue">Todo lo del mostrador —ventas, pedidos, inventario, clientes, usuarios y estos ajustes— ' +
+      "se guarda en este mismo aparato. No hace falta internet ni servidor: cierras el navegador, vuelves a abrir y está donde lo dejaste.</p>" +
+      '<p class="nota-pie" style="margin-top:.6rem">' +
+        (D.guardadoFallo
+          ? '<span class="rojo">El navegador no acepta más datos (' + esc(D.guardadoFallo) + "). Exporta el día antes de seguir.</span>"
+          : (D.guardado ? "Última vez, " + fechaHora(D.guardado) + "." : "Todavía no se ha guardado nada.")) +
+      " Como vive aquí y no en la nube, otro aparato tiene sus propios datos, y borrar los del navegador se los lleva.</p>" +
+      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
+        ic("papelera") + "Empezar de cero</button></div></div>" +
+
       '<div class="tarj"><div class="tarj__cab">' + ic("sinred","ambar") + "<h4>Conexión</h4></div>" +
       '<label class="palanca"><input type="checkbox" data-a="conexion"' + (D.enLinea ? "" : " checked") + ">Simular que se cayó el internet</label>" +
       '<p class="nota-pie" style="margin-top:.5rem">Sin conexión el sistema sigue tomando pedidos y lo dice en la banda de abajo. Al volver, sincroniza.</p></div>' +
@@ -2474,6 +2639,7 @@ function ventanaHTML(){
   if(v === "cliente")        return ventCliente();
   if(v === "existencia")     return ventExistencia();
   if(v === "usuario")        return ventUsuario();
+  if(v === "empezarCero")    return ventEmpezarCero();
   if(v === "permisos")       return ventPermisos();
   if(v === "puerta")         return ventPuerta();
   if(v === "actualizar")     return ventActualizar();
@@ -2887,6 +3053,21 @@ function ventUsuario(){
     '<button class="btn btn--sol" data-a="guardarUsuario">Agregar usuario</button></div></div>';
 }
 
+/* ── Empezar de cero ───────────────────────────────────────────── */
+function ventEmpezarCero(){
+  return '<div class="vent vent--angosta">' + cab("¿Empezar de cero?", "Se borra todo lo de este aparato") +
+    '<div class="vent__cuerpo">' +
+      '<div class="aviso aviso--sol"><span class="aviso__ic">' + ic("alerta") + "</span><div>" +
+      '<p class="aviso__d">Se van las ' + plural(D.documentos.length, "venta", "ventas") +
+        ", los " + plural(D.pedidos.length, "pedido", "pedidos") +
+        ", los " + plural(D.clientes.length, "cliente", "clientes") +
+        " y los usuarios que hayas agregado. No hay manera de recuperarlos.</p></div></div>" +
+      '<p class="min tenue" style="margin-top:.8rem">Vuelven los datos de ejemplo, como el primer día. ' +
+      "Si lo que quieres es guardar lo de hoy antes de borrar, cierra esto y usa <b>Exportar el día</b> en Ventas y cierre.</p>" +
+    '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
+    '<button class="btn btn--peligro" style="margin-left:auto" data-a="confirmarCero">Borrar y empezar de cero</button></div></div>';
+}
+
 /* ── Los permisos de una persona ───────────────────────────────── */
 function ventPermisos(){
   const u = D.usuarios.find(x => x.id === Number(D.ventana.id));
@@ -2973,11 +3154,10 @@ function ventActualizar(){
         '<div><p class="rot">LA QUE ESTÁ LISTA</p><p class="cifra cifra--md ambar">' +
           (D.pwa.versionNueva ? "v" + esc(D.pwa.versionNueva) : "la nueva") + "</p></div></div>" +
       (aMedias.length
-        ? '<div class="aviso aviso--sol" style="margin-top:.9rem"><span class="aviso__ic">' + ic("alerta") + "</span><div>" +
+        ? '<div class="aviso" style="margin-top:.9rem"><span class="aviso__ic">' + ic("info") + "</span><div>" +
           '<p class="aviso__d">Tienes ' + aMedias.join(" y ") +
-          ". Al actualizar se recarga el sistema y eso se pierde: termina primero y actualiza después.</p></div></div>"
-        : '<p class="min tenue" style="margin-top:.9rem">Se recarga el sistema y hay que volver a entrar con tu usuario. ' +
-          "Lo cobrado y lo guardado no se toca.</p>") +
+          ". Se recarga el sistema, pero eso queda guardado en el aparato y vuelve tal cual.</p></div></div>"
+        : '<p class="min tenue" style="margin-top:.9rem">Se recarga el sistema. Lo cobrado y lo guardado no se toca.</p>') +
       '<p class="nota-pie" style="margin-top:.7rem">Si la dejas para después, el aviso se queda arriba y vuelve a preguntar cada rato. ' +
       "Trabajar con dos versiones distintas en el mismo mostrador es lo que no conviene.</p>" +
     '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Ahora no</button>' +
@@ -2986,6 +3166,7 @@ function ventActualizar(){
 
 /* ── Acerca del sistema ────────────────────────────────────────── */
 const CAMBIOS = [
+  { v:"1.0.5", f:"06/09/2026", t:"Todo queda guardado en el aparato: se cierra el navegador y al volver está donde quedó." },
   { v:"1.0.5", f:"06/09/2026", t:"Cada rol entra solo a sus pantallas, y la dueña reparte los permisos uno por uno." },
   { v:"1.0.5", f:"06/09/2026", t:"La entrada ya no dice con qué usuario probar: quien entra, sabe lo suyo." },
   { v:"1.0.5", f:"06/09/2026", t:"El sistema arranca en claro; la noche se escoge y se queda." },
@@ -3400,6 +3581,7 @@ function render(){
     pintarCapa();
     if(!D.foco) D.foco = "usuario";
     restaurarFoco();
+    guardar();
     return;
   }
   app.innerHTML = '<div class="app">' + barraNueva() + cabecera() +
@@ -3408,6 +3590,7 @@ function render(){
   pintarCapa();
   pintarTour();
   restaurarFoco();
+  guardar();
 }
 
 
@@ -3903,6 +4086,13 @@ const ACCIONES = {
     }else recargar();
   },
   revisarVersion(){ buscarVersion(true); },
+  confirmarCero(){
+    olvidarTodo();
+    /* Se recarga en vez de rearmar el estado a mano: así no queda ni un
+       resto de lo anterior colgando en memoria. */
+    D.pwa.recargando = true;
+    recargar();
+  },
   abrirApp(){ abrirLaApp(); },
   puerta(){ D.pwa.puertaVista = false; abrirPuerta(); },
   instalar(){
@@ -4146,11 +4336,19 @@ function fijarIdioma(){
 
 /* ── Arranque ──────────────────────────────────────────────────── */
 fijarIdioma();
-sembrar();
+/* Si hay algo guardado en este aparato, eso manda. Los datos de ejemplo
+   solo se siembran la primera vez, o cuando alguien decide empezar de
+   cero desde Ajustes. */
+if(!cargar()) sembrar();
 prepararPWA();
 render();
 cargarTasaBCV(false);
 /* Se le da un momento al navegador para que diga si la puede instalar,
    y ahí mismo se abre la puerta: instalarla, o saltar a la instalada. */
 setTimeout(abrirPuerta, 900);
+
+/* Al cerrar la pestaña o mandarla al fondo no se espera al temporizador:
+   se escribe de una, que es justo cuando el navegador puede descartarla. */
+window.addEventListener("pagehide", guardarYa);
+document.addEventListener("visibilitychange", () => { if(document.hidden) guardarYa(); });
 </script>
