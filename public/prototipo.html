@@ -1112,7 +1112,7 @@ const D = {
   q: { venta:"", pedidos:"", inventario:"", clientes:"", bitacora:"" },
   filtro: { pedidos:"todos", inventario:"todas" },
   venta: [],          // { prodId, cant }
-  ventaPago: null,
+  ventaPagos: [],
   ventaPanelAbierto: false,
   pedidoAbierto: null,
   docAbierto: null,
@@ -1240,26 +1240,10 @@ const D = {
 
 /* Al arrancar, los pedidos y documentos del día de ejemplo */
 function sembrar(){
-  const T = D.tasas.oficial;
-  D.pedidos = [
-    { id:1042, clienteId:1, lineas:[{ prodId:11, cant:1 }, { prodId:12, cant:1 }], abonado:8000,
-      estado:"por_cobrar", retiro:hoyMas(0,16,0), canal:"mostrador", nota:"Letras en chocolate: «Felicidades Ana»", tasa:T, tasaTipo:"oficial" },
-    { id:1045, clienteId:4, lineas:[{ prodId:8, cant:1 }, { prodId:7, cant:1 }, { prodId:3, cant:1 }], abonado:0,
-      estado:"por_cobrar", retiro:hoyMas(0,19,30), canal:"whatsapp", nota:"", tasa:T, tasaTipo:"oficial" },
-    { id:1040, clienteId:6, lineas:[{ prodId:5, cant:12 }], abonado:0,
-      estado:"por_cobrar", retiro:hoyMas(1,10,0), canal:"whatsapp", nota:"Facturar a nombre de la empresa", tasa:T, tasaTipo:"oficial" },
-    { id:1046, clienteId:5, lineas:[{ prodId:6, cant:2 }], abonado:2000,
-      estado:"por_cobrar", retiro:hoyMas(1,17,0), canal:"mostrador", nota:"", tasa:T, tasaTipo:"oficial" },
-    { id:1041, clienteId:2, lineas:[{ prodId:6, cant:20 }], abonado:80000,
-      estado:"cobrado", retiro:hoyMas(0,18,0), canal:"whatsapp", nota:"", tasa:T, tasaTipo:"oficial" },
-    { id:1038, clienteId:3, lineas:[{ prodId:2, cant:24 }], abonado:12000,
-      estado:"entregado", retiro:hoyMas(-8,10,0), canal:"mostrador", nota:"", tasa:T, tasaTipo:"oficial" },
-    { id:1039, clienteId:3, lineas:[{ prodId:1, cant:20 }], abonado:0,
-      estado:"anulado", retiro:hoyMas(-1,9,0), canal:"mostrador", nota:"", tasa:T, tasaTipo:"oficial" }
-  ];
-
-  /* Sin ventas ni cierre de ejemplo: eran de prueba y el catálogo ya es
-     el real del cliente, así que el mostrador arranca en Bs 0 vendido. */
+  /* Sin ventas, cierre ni pedidos de ejemplo: eran de prueba y el
+     catálogo ya es el real del cliente, así que el mostrador arranca
+     limpio del todo. */
+  D.pedidos = [];
   D.documentos = [];
   D.bitacora = [];
   recalcularComprometido();
@@ -1385,6 +1369,10 @@ const totalVenta = () => D.venta.reduce((s, l) => {
   const p = D.productos.find(x => x.id === l.prodId);
   return s + (p ? precioBaseBs(p) * l.cant : 0);
 }, 0);
+/* Puede pagarse con más de una forma a la vez (mitad punto, mitad
+   efectivo): cada una guarda su propio monto, en su propia moneda. */
+const sumaPagosBs = pagos => pagos.reduce((s, p) =>
+  s + (p.id === "efectivo_usd" ? (Number(p.monto) || 0) * D.tasas.oficial : (Number(p.monto) || 0)), 0);
 
 function ventasDelDia(){ return D.documentos.filter(d => !d.anulado); }
 const vendidoHoy = () => ventasDelDia().reduce((s, d) => s + d.total, 0);
@@ -1450,7 +1438,7 @@ function estadoGuardable(){
     /* La venta a medio armar y el pedido a medio montar también: si la
        tableta se duerme o se recarga, nadie tiene que empezar de nuevo. */
     venta: D.venta,
-    ventaPago: D.ventaPago,
+    ventaPagos: D.ventaPagos,
     borrador: D.borrador
   };
 }
@@ -1526,7 +1514,7 @@ function cargar(){
       if(typeof g[k] === "number") D[k] = g[k];
     });
     D.venta      = Array.isArray(g.venta) ? g.venta : [];
-    D.ventaPago  = g.ventaPago || null;
+    D.ventaPagos = Array.isArray(g.ventaPagos) ? g.ventaPagos : [];
     D.borrador   = g.borrador || null;
 
     /* La sesión se recupera solo si no se ha enfriado. */
@@ -2095,10 +2083,29 @@ function vistaVenta(){
       }).join("")
     : '<p class="min tenue" style="padding:1.2rem 0">Toca un producto de la izquierda, o escribe su nombre en el buscador y pulsa Enter.</p>';
 
-  const pagos = formasPago().map(f =>
-    '<button class="btn btn--contorno" data-a="pago" data-id="' + f.id + '"' +
-    (D.ventaPago === f.id ? ' style="background:var(--sol-vela);border-color:var(--sol)"' : "") + ">" +
-    ic(f.ic) + esc(f.nombre.replace("Efectivo en bolívares", "Efectivo Bs").replace("Efectivo en divisa", "Efectivo $")) + "</button>").join("");
+  const recibidoBs = sumaPagosBs(D.ventaPagos);
+  const faltaBs = total - recibidoBs;
+  const cubierto = D.ventaPagos.length > 0 && recibidoBs >= total;
+
+  const pagos = formasPago().map(f => {
+    const activo = D.ventaPagos.some(x => x.id === f.id);
+    return '<button class="btn btn--contorno" data-a="pago" data-id="' + f.id + '"' +
+    (activo ? ' style="background:var(--sol-vela);border-color:var(--sol)"' : "") + ">" +
+    ic(f.ic) + esc(f.nombre.replace("Efectivo en bolívares", "Efectivo Bs").replace("Efectivo en divisa", "Efectivo $")) + "</button>";
+  }).join("");
+
+  const montos = D.ventaPagos.length
+    ? '<div class="col" style="gap:.4rem;margin-top:.5rem">' + D.ventaPagos.map(pg => {
+        const f = formasPago().find(x => x.id === pg.id);
+        const enUsd = pg.id === "efectivo_usd";
+        return '<div class="campo" style="margin-bottom:0"><label class="campo__et">' + esc(f.nombre) + '</label>' +
+          '<div class="grupo-ent"><span class="grupo-ent__fijo">' + (enUsd ? "$" : "Bs") + '</span>' +
+          '<input class="ent ent--cifra" id="pago-monto-' + pg.id + '" data-a="pagoMonto" data-id="' + pg.id +
+          '" inputmode="decimal" value="' + pg.monto + '"></div></div>';
+      }).join("") + "</div>" +
+      '<div class="tot-fila" style="margin-top:.5rem"><span>' + (faltaBs > 0 ? "Falta" : "Vuelto") + "</span>" +
+      '<b class="' + (faltaBs > 0 ? "rojo" : "verde") + '">' + bs(Math.abs(faltaBs)) + "</b></div>"
+    : "";
 
   const panel = '<div data-tour="ticket" class="tarj venta__panel' + (D.ventaPanelAbierto ? "" : " es-cerrado") + '">' +
     '<button class="resumen-tel" data-a="panelVenta">' + ic("carrito") +
@@ -2112,11 +2119,11 @@ function vistaVenta(){
     '<div style="margin-top:.7rem">' +
       '<div class="tot-fila"><span>En dólares oficiales</span><b>$ ' + num(enDivisa(total, "oficial")) + "</b></div>" +
       '<div class="tot-fila tot-fila--gran"><span>Total</span><b>' + bs(total) + "</b></div></div>" +
-    '<p class="rot" style="margin:.8rem 0 .4rem">CON QUÉ PAGA</p>' +
-    '<div class="rejilla-2" style="gap:.4rem" data-tour="pagos">' + pagos + "</div>" +
+    '<p class="rot" style="margin:.8rem 0 .4rem">CON QUÉ PAGA <span class="tenue" style="font-weight:400">— puede ser más de una</span></p>' +
+    '<div class="rejilla-2" style="gap:.4rem" data-tour="pagos">' + pagos + "</div>" + montos +
     '<button class="btn btn--sol btn--xl btn--bloque" style="margin-top:.8rem" data-a="cobrarVenta"' +
-      (D.venta.length && D.ventaPago ? "" : " disabled") + ">" +
-      (D.venta.length ? (D.ventaPago ? "Cobrar e imprimir" : "Elige cómo paga") : "Agrega algo primero") + "</button>" +
+      (D.venta.length && cubierto ? "" : " disabled") + ">" +
+      (!D.venta.length ? "Agrega algo primero" : !D.ventaPagos.length ? "Elige cómo paga" : (cubierto ? "Cobrar e imprimir" : "Falta " + bs(faltaBs))) + "</button>" +
     "</div></div>";
 
   return '<div class="venta"><div class="col">' +
@@ -2146,7 +2153,8 @@ function ticketHTML(d){
     "<table>" + lineas + "</table><hr>" +
     "<table>" +
       '<tr class="tot"><td>TOTAL Bs</td><td class="d">' + num(d.total) + "</td></tr>" +
-      "<tr><td>" + esc(d.pago) + '</td><td class="d">' + num(d.total) + "</td></tr>" +
+      (d.pagos || [{ nombre:d.pago, monto:d.total }]).map(pd =>
+        "<tr><td>" + esc(pd.nombre) + '</td><td class="d">' + num(pd.monto) + "</td></tr>").join("") +
     "</table><hr>" +
     '<div class="ticket__c">Tasa aplicada ' + num(d.tasa) + "<br>Equivale a " + signo(d.tasaTipo) + " " + num(d.total / d.tasa) + "</div>" +
     (d.anulado ? '<hr><div class="ticket__c"><b>*** DOCUMENTO ANULADO ***</b></div>' : "") +
@@ -2410,10 +2418,14 @@ function vistaCierre(){
   const pend = porCobrar();
   const sinEntregar = D.pedidos.filter(p => p.estado === "cobrado");
 
+  /* Un documento puede traer más de una forma de pago (mitad punto,
+     mitad efectivo): cada una suma lo suyo, no el total completo. */
   const pagos = {};
   buenos.forEach(d => {
-    pagos[d.pago] = pagos[d.pago] || { n:0, monto:0 };
-    pagos[d.pago].n++; pagos[d.pago].monto += d.total;
+    (d.pagos || [{ nombre:d.pago, monto:d.total }]).forEach(pd => {
+      pagos[pd.nombre] = pagos[pd.nombre] || { n:0, monto:0 };
+      pagos[pd.nombre].n++; pagos[pd.nombre].monto += pd.monto;
+    });
   });
   const filasPago = Object.keys(pagos).sort((a, b) => pagos[b].monto - pagos[a].monto).map(k => {
     const p = pagos[k], parte = total ? p.monto / total * 100 : 0;
@@ -2600,7 +2612,7 @@ function vistaAjustes(){
           : (D.guardado ? "Última vez, " + fechaHora(D.guardado) + "." : "Todavía no se ha guardado nada.")) +
       " Como vive aquí y no en la nube, otro aparato tiene sus propios datos, y borrar los del navegador se los lleva.</p>" +
       '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
-        ic("papelera") + "Borrar ventas y cierre de prueba</button>" +
+        ic("papelera") + "Borrar ventas, cierre y pedidos de prueba</button>" +
       '<button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
         ic("papelera") + "Empezar de cero</button></div></div>" +
 
@@ -3213,15 +3225,15 @@ function ventEmpezarCero(){
     '<button class="btn btn--peligro" style="margin-left:auto" data-a="confirmarCero">Borrar y empezar de cero</button></div></div>';
 }
 function ventLimpiarVentas(){
-  return '<div class="vent vent--angosta">' + cab("¿Borrar las ventas y el cierre de prueba?", "") +
+  return '<div class="vent vent--angosta">' + cab("¿Borrar las ventas, el cierre y los pedidos de prueba?", "") +
     '<div class="vent__cuerpo">' +
       '<div class="aviso aviso--sol"><span class="aviso__ic">' + ic("alerta") + "</span><div>" +
       '<p class="aviso__d">Se van los ' + plural(D.documentos.length, "documento", "documentos") +
-        " de Facturación y todo lo que suma el cierre. No se puede deshacer.</p></div></div>" +
-      '<p class="min tenue" style="margin-top:.8rem">El inventario, los precios, los clientes, los usuarios y los pedidos ' +
-      "no se tocan — esto es solo lo ya cobrado.</p>" +
+        " de Facturación, todo lo que suma el cierre, y los " + plural(D.pedidos.length, "pedido", "pedidos") +
+        ". No se puede deshacer.</p></div></div>" +
+      '<p class="min tenue" style="margin-top:.8rem">El inventario, los precios, los clientes y los usuarios no se tocan.</p>' +
     '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
-    '<button class="btn btn--peligro" style="margin-left:auto" data-a="confirmarLimpiarVentas">Borrar ventas y cierre</button></div></div>';
+    '<button class="btn btn--peligro" style="margin-left:auto" data-a="confirmarLimpiarVentas">Borrar ventas, cierre y pedidos</button></div></div>';
 }
 
 /* ── Los permisos de una persona ───────────────────────────────── */
@@ -3919,9 +3931,10 @@ function bAgregar(id){
   if(l) l.cant++; else D.borrador.lineas.push({ prodId:id, nombre:p.nombre, precio:precioBaseBs(p), cant:1 });
 }
 
-function nuevoDocumento(cliente, pago, lineas, total, pedidoId){
+function nuevoDocumento(cliente, pago, lineas, total, pedidoId, pagos){
   const d = { id: ++D.seqDoc, hora:new Date(), cliente, pago, lineas, total,
-              tasa: D.tasas.oficial, tasaTipo:"oficial", anulado:false, pedidoId: pedidoId || null };
+              tasa: D.tasas.oficial, tasaTipo:"oficial", anulado:false, pedidoId: pedidoId || null,
+              pagos: pagos || null };
   D.documentos.unshift(d);
   return d;
 }
@@ -4000,24 +4013,49 @@ const ACCIONES = {
     if(l.cant <= 0) D.venta = D.venta.filter(x => x.prodId !== l.prodId);
     render();
   },
-  pago(ds){ D.ventaPago = ds.id; render(); },
+  pago(ds){
+    const i = D.ventaPagos.findIndex(p => p.id === ds.id);
+    if(i >= 0){ D.ventaPagos.splice(i, 1); render(); return; }
+    const faltaBs = Math.max(0, totalVenta() - sumaPagosBs(D.ventaPagos));
+    const monto = ds.id === "efectivo_usd" ? Math.round(faltaBs / D.tasas.oficial * 100) / 100 : Math.round(faltaBs * 100) / 100;
+    D.ventaPagos.push({ id: ds.id, monto });
+    D.foco = "pago-monto-" + ds.id;
+    render();
+  },
+  pagoMonto(ds, el){
+    const p = D.ventaPagos.find(x => x.id === ds.id);
+    if(p) p.monto = aNumero(el.value);
+    D.foco = el.id; render();
+  },
   limpiarVenta(){ D.q.venta = ""; D.foco = "q-venta"; render(); },
   panelVenta(){ D.ventaPanelAbierto = !D.ventaPanelAbierto; render(); },
   cobrarVenta(){
-    if(!D.venta.length || !D.ventaPago) return;
-    const forma = formasPago().find(f => f.id === D.ventaPago);
+    const total = totalVenta();
+    if(!D.venta.length || !D.ventaPagos.length || sumaPagosBs(D.ventaPagos) < total) return;
     const lineas = D.venta.map(l => {
       const p = D.productos.find(x => x.id === l.prodId);
       return { prodId:p.id, nombre:p.nombre, precio:precioBaseBs(p), cant:l.cant };
     });
-    const total = totalVenta();
+    /* Cada forma aporta lo suyo hasta completar el total; lo que sobra
+       (vuelto) no se le atribuye a ninguna — no es venta de nadie. */
+    let restante = total;
+    const pagosDetalle = [];
+    D.ventaPagos.forEach(pg => {
+      if(restante <= 0) return;
+      const f = formasPago().find(x => x.id === pg.id);
+      const montoBs = pg.id === "efectivo_usd" ? (Number(pg.monto) || 0) * D.tasas.oficial : (Number(pg.monto) || 0);
+      const aplica = Math.min(montoBs, restante);
+      if(aplica > 0) pagosDetalle.push({ nombre:f.nombre, monto:aplica });
+      restante -= aplica;
+    });
+    const pagoTexto = pagosDetalle.map(p => p.nombre).join(" + ");
     descontar(lineas);
-    const d = nuevoDocumento("Contado", forma.nombre, lineas, total);
+    const d = nuevoDocumento("Contado", pagoTexto, lineas, total, null, pagosDetalle);
     anotar("Venta de mostrador " + String(d.id).padStart(5, "0") + " · " + bs(total));
-    D.venta = []; D.ventaPago = null; D.ventaPanelAbierto = false;
+    D.venta = []; D.ventaPagos = []; D.ventaPanelAbierto = false;
     D.ventana = { v:"ticket", id:d.id, otra:true };
     render();
-    avisar("Cobrado · " + bs(total), forma.nombre + ". Ya está en Facturación.");
+    avisar("Cobrado · " + bs(total), pagoTexto + ". Ya está en Facturación.");
   },
   otraVenta(){ D.ventana = null; D.pantalla = "venta"; D.foco = "q-venta"; render(); },
   crearProducto(){
@@ -4298,7 +4336,7 @@ const ACCIONES = {
   },
   efectivo(ds, el){
     D.ajustes.efectivo = el.checked;
-    if(!el.checked && D.ventaPago && D.ventaPago.indexOf("efectivo") === 0) D.ventaPago = null;
+    if(!el.checked) D.ventaPagos = D.ventaPagos.filter(p => p.id.indexOf("efectivo") !== 0);
     render();
     avisar(el.checked ? "Efectivo encendido" : "Efectivo apagado",
       el.checked ? "Vuelve a aparecer en todas las pantallas de cobro." : "Desapareció de Venta y de Cobrar, no solo de una.");
@@ -4334,14 +4372,16 @@ const ACCIONES = {
     recargar();
   },
   confirmarLimpiarVentas(){
-    const n = D.documentos.length;
+    const nDocs = D.documentos.length, nPed = D.pedidos.length;
     D.documentos = [];
+    D.pedidos = [];
     D.seqDoc = 0;
-    anotar("Borró " + plural(n, "venta", "ventas") + " y el cierre de prueba");
+    recalcularComprometido();
+    anotar("Borró " + plural(nDocs, "venta", "ventas") + ", el cierre y " + plural(nPed, "pedido", "pedidos") + " de prueba");
     D.ventana = null;
     guardar();
     render();
-    avisar("Ventas y cierre borrados", "Facturación y el cierre arrancan en Bs 0.");
+    avisar("Ventas, cierre y pedidos borrados", "Facturación, el cierre y Pedidos arrancan vacíos.");
   },
   abrirApp(){ abrirLaApp(); },
   puerta(){ D.pwa.puertaVista = false; abrirPuerta(); },
@@ -4462,7 +4502,7 @@ const ACCIONES = {
    miran —buscar, filtrar, imprimir, cambiar el tema— no están aquí:
    ver nunca se le niega a quien ya entró. */
 const ACCION_MODULO = {
-  agregar:"venta", menos:"venta", pago:"venta", limpiarVenta:"venta",
+  agregar:"venta", menos:"venta", pago:"venta", pagoMonto:"venta", limpiarVenta:"venta",
   cobrarVenta:"venta", otraVenta:"venta", cobrarPedido:"venta", cobroPago:"venta",
   cobroRecibe:"venta", cobroMonto:"venta",
 
