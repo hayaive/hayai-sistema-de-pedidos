@@ -1693,41 +1693,12 @@ function logoImg(alto){
     '<img class="logo-oscuro" src="' + LOGO_OSCURO + '" alt="" style="height:' + alto + '"></span>';
 }
 
-function chipDe(k){
-  if(k === "venta"){
-    const n = ventasDelDia().length;
-    return '<span class="chip chip--liso chip--xs chip--hueco">' + plural(n, "venta hoy", "ventas hoy") + "</span>";
-  }
-  if(k === "pedidos"){
-    const n = porCobrar().length;
-    return n ? '<span class="chip chip--sol chip--xs">' + plural(n, "por cobrar", "por cobrar") + "</span>"
-             : '<span class="chip chip--verde chip--xs">Nada pendiente</span>';
-  }
-  if(k === "inventario"){
-    const n = D.productos.filter(bajoMinimo).length;
-    return n ? '<span class="chip chip--rojo chip--xs">' + n + " bajo el mínimo</span>"
-             : '<span class="chip chip--verde chip--xs">Todo en orden</span>';
-  }
-  if(k === "clientes")
-    return '<span class="chip chip--liso chip--xs chip--hueco">' + plural(D.clientes.length, "registrado", "registrados") + "</span>";
-  if(k === "facturacion")
-    return '<span class="chip chip--liso chip--xs chip--hueco">' + plural(D.documentos.length, "ticket hoy", "tickets hoy") + "</span>";
-  if(k === "cierre")
-    return '<span class="chip chip--liso chip--xs chip--hueco chip--num">' + bs(vendidoHoy()) + "</span>";
-  if(k === "usuarios")
-    return '<span class="chip chip--liso chip--xs chip--hueco">' + plural(D.usuarios.length, "usuario", "usuarios") + "</span>";
-  if(k === "ajustes")
-    return '<span class="chip chip--liso chip--xs chip--hueco">Tasa ' + etiquetaTasa(D.ajustes.tasaPref) + "</span>";
-  return "";
-}
-
 function tarjetaNav(k){
   const p = PANTALLAS[k];
   return '<button class="card-nav" data-a="ir" data-p="' + k + '">' +
     '<span class="card-nav__ic">' + ic(p.ic) + "</span>" +
     '<span class="card-nav__n">' + p.n + "</span>" +
-    '<span class="card-nav__pie">' + chipDe(k) +
-      (p.tecla ? '<span class="tecla card-nav__tecla">' + p.tecla + "</span>" : "") + "</span></button>";
+    (p.tecla ? '<span class="card-nav__pie"><span class="tecla card-nav__tecla">' + p.tecla + "</span></span>" : "") + "</button>";
 }
 
 /* Las tres filas no son decoración: separan lo que se hace todo el rato
