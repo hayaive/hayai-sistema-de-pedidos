@@ -1161,39 +1161,67 @@ const D = {
   ],
   seqTipoPrecio: 2,
   productos: [
-    { id:1,  codigo:"PAS-001", nombre:"tres-leches",                 descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:2,  codigo:"PAS-002", nombre:"milhojas",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:3,  codigo:"PAS-003", nombre:"arequipe",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:4,  codigo:"PAS-004", nombre:"prestigio",                   descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:5,  codigo:"PAS-005", nombre:"brownie",                     descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.30}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:6,  codigo:"PAS-006", nombre:"brownie-quesillo",            descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.50, 2:1.50}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:7,  codigo:"PAS-007", nombre:"Beso de Angel",               descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.50, 2:1.50}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:8,  codigo:"PAS-008", nombre:"yogurt",                      descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.50, 2:2.30}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:9,  codigo:"PAS-009", nombre:"Quesillo pote",                descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.50, 2:2.30}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:10, codigo:"PAS-010", nombre:"gelatina",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.00, 2:1.50}, disponible:0, minimo:0, vendidas:0, activo:true },
+    /* Tortas frías: rango fijo pedido por el cliente, $1.10 (mayor) a
+       $1.20 (detal) — se cobra en Bs a la tasa del momento, así que el
+       equivalente en dólares se mantiene siempre dentro del rango.
+       No aplica a lo que se vende por bandeja/entero (eso es otra escala). */
+    { id:1,  codigo:"PAS-001", nombre:"tres-leches",                 descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:2,  codigo:"PAS-002", nombre:"milhojas",                    descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:3,  codigo:"PAS-003", nombre:"arequipe",                    descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:4,  codigo:"PAS-004", nombre:"prestigio",                   descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:5,  codigo:"PAS-005", nombre:"brownie",                     descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:6,  codigo:"PAS-006", nombre:"brownie-quesillo",            descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:7,  codigo:"PAS-007", nombre:"Beso de Angel",               descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:8,  codigo:"PAS-008", nombre:"yogurt",                      descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:9,  codigo:"PAS-009", nombre:"Quesillo pote",                descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:10, codigo:"PAS-010", nombre:"gelatina",                    descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:11, codigo:"PAS-011", nombre:"bandeja de tequeños 30 und",  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:2.00, 2:1.50}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:12, codigo:"PAS-012", nombre:"bandeja de pasapalos 100 und",descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:7.00, 2:6.00}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:13, codigo:"PAS-013", nombre:"Quesillo Redondo",             descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:4.00, 2:3.50}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:14, codigo:"PAS-014", nombre:"Cortaditos",                  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:15, codigo:"PAS-015", nombre:"catalina",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:16, codigo:"PAS-016", nombre:"patelitos",                   descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:14, codigo:"PAS-014", nombre:"Cortaditos",                  descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:15, codigo:"PAS-015", nombre:"catalina",                    descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:16, codigo:"PAS-016", nombre:"patelitos",                   descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:17, codigo:"PAS-017", nombre:"galleta pasta seca",          descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:0.60, 2:0.60}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:18, codigo:"PAS-018", nombre:"palmeritas",                  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:19, codigo:"PAS-019", nombre:"polvorosas",                  descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:20, codigo:"PAS-020", nombre:"pan grande fruta",            descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.30}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:21, codigo:"PAS-021", nombre:"pan de tunja",                descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.36, 2:1.30}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:22, codigo:"PAS-022", nombre:"golfeado",                    descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:23, codigo:"PAS-023", nombre:"pecho de niña",               descripcion:"", categoria:"Pastelería", subcategoria:"", precios:{1:1.11, 2:1.30}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:18, codigo:"PAS-018", nombre:"palmeritas",                  descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:19, codigo:"PAS-019", nombre:"polvorosas",                  descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:20, codigo:"PAS-020", nombre:"pan grande fruta",            descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:21, codigo:"PAS-021", nombre:"pan de tunja",                descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:22, codigo:"PAS-022", nombre:"golfeado",                    descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:23, codigo:"PAS-023", nombre:"pecho de niña",               descripcion:"", categoria:"Pastelería", subcategoria:"Torta fría", precios:{1:1.20, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:24, codigo:"BEB-001", nombre:"refresco de botella",         descripcion:"", categoria:"Bebidas",    subcategoria:"", precios:{1:1.00, 2:1.00}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:25, codigo:"BEB-002", nombre:"refresco litro y medio",      descripcion:"", categoria:"Bebidas",    subcategoria:"", precios:{1:1.10, 2:1.10}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:26, codigo:"TOR-001", nombre:"Grande 3kg",                  descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:13.00, 2:13.00}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:27, codigo:"TOR-002", nombre:"Mediano 2kg",                 descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:11.00, 2:11.00}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:28, codigo:"TOR-003", nombre:"kilo y medio",                descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:8.00, 2:8.00}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:29, codigo:"TOR-004", nombre:"Mini 700 gr",                 descripcion:"", categoria:"Tortas",     subcategoria:"", precios:{1:5.00, 2:5.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+
+    /* Tortas por tamaño: "sola" = sin decorar ni combo. Los combos de
+       abajo son paquetes de precio fijo, no la suma de sus partes. */
+    { id:26, codigo:"TOR-001", nombre:"Torta Grande - Sola",         descripcion:"3 kilos, sin decorar",  categoria:"Tortas", subcategoria:"Grande",   precios:{1:13.00, 2:13.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:27, codigo:"TOR-002", nombre:"Torta Mediana - Sola",        descripcion:"2 kilos, sin decorar",  categoria:"Tortas", subcategoria:"Mediana",  precios:{1:11.00, 2:11.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:28, codigo:"TOR-003", nombre:"kilo y medio",                descripcion:"",                      categoria:"Tortas", subcategoria:"",         precios:{1:8.00, 2:8.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:29, codigo:"TOR-004", nombre:"Torta Mini - Sola",           descripcion:"Medio kilo, sin decorar",categoria:"Tortas", subcategoria:"Mini",     precios:{1:5.00, 2:5.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:34, codigo:"TOR-005", nombre:"Torta Pequeña - Sola",        descripcion:"1 kilo, sin decorar",   categoria:"Tortas", subcategoria:"Pequeña",  precios:{1:7.00, 2:7.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+
+    { id:35, codigo:"TOR-006", nombre:"Torta Mini - Combo 1",    descripcion:"Medio kilo decorada, con refresco, 30 tequeños, galletas, caja y vela", categoria:"Tortas", subcategoria:"Mini",    precios:{1:7.00, 2:7.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:36, codigo:"TOR-007", nombre:"Torta Mini - Combo 2",    descripcion:"Medio kilo decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, caja y vela", categoria:"Tortas", subcategoria:"Mini",    precios:{1:9.00, 2:9.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:37, codigo:"TOR-008", nombre:"Torta Mini - Combo 3",    descripcion:"Medio kilo decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, gelatina, 12 suspiros, caja y vela", categoria:"Tortas", subcategoria:"Mini",    precios:{1:11.00, 2:11.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+
+    { id:38, codigo:"TOR-009", nombre:"Torta Pequeña - Combo 1", descripcion:"1 kilo decorada, con refresco, 30 tequeños, galletas, caja y vela", categoria:"Tortas", subcategoria:"Pequeña", precios:{1:9.00, 2:9.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:39, codigo:"TOR-010", nombre:"Torta Pequeña - Combo 2", descripcion:"1 kilo decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, caja y vela", categoria:"Tortas", subcategoria:"Pequeña", precios:{1:11.00, 2:11.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:40, codigo:"TOR-011", nombre:"Torta Pequeña - Combo 3", descripcion:"1 kilo decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, gelatina, 12 suspiros, caja y vela", categoria:"Tortas", subcategoria:"Pequeña", precios:{1:13.00, 2:13.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+
+    { id:41, codigo:"TOR-012", nombre:"Torta Mediana - Combo 1", descripcion:"2 kilos decorada, con refresco, 30 tequeños, galletas, caja y vela", categoria:"Tortas", subcategoria:"Mediana", precios:{1:13.00, 2:13.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:42, codigo:"TOR-013", nombre:"Torta Mediana - Combo 2", descripcion:"2 kilos decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, caja y vela", categoria:"Tortas", subcategoria:"Mediana", precios:{1:15.00, 2:15.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:43, codigo:"TOR-014", nombre:"Torta Mediana - Combo 3", descripcion:"2 kilos decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, gelatina, 12 suspiros, caja y vela", categoria:"Tortas", subcategoria:"Mediana", precios:{1:17.00, 2:17.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+
+    { id:44, codigo:"TOR-015", nombre:"Torta Grande - Combo 1",  descripcion:"3 kilos decorada, con refresco, 30 tequeños, galletas, caja y vela", categoria:"Tortas", subcategoria:"Grande", precios:{1:15.00, 2:15.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:45, codigo:"TOR-016", nombre:"Torta Grande - Combo 2",  descripcion:"3 kilos decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, caja y vela", categoria:"Tortas", subcategoria:"Grande", precios:{1:17.00, 2:17.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+    { id:46, codigo:"TOR-017", nombre:"Torta Grande - Combo 3",  descripcion:"3 kilos decorada, con refresco, 30 tequeños, galletas, quesillo 900gr, gelatina, 12 suspiros, caja y vela", categoria:"Tortas", subcategoria:"Grande", precios:{1:19.00, 2:19.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+
     { id:30, codigo:"OTR-001", nombre:"bandanas",                    descripcion:"", categoria:"Otros",      subcategoria:"", precios:{1:2.50, 2:2.50}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:31, codigo:"INS-001", nombre:"vela escarchada",             descripcion:"", categoria:"Insumos",    subcategoria:"", precios:{1:1.20, 2:1.20}, disponible:0, minimo:0, vendidas:0, activo:true },
     { id:32, codigo:"INS-002", nombre:"vela unitaria",               descripcion:"", categoria:"Insumos",    subcategoria:"", precios:{1:0.50, 2:0.50}, disponible:0, minimo:0, vendidas:0, activo:true },
-    { id:33, codigo:"INS-003", nombre:"toppers",                     descripcion:"", categoria:"Insumos",    subcategoria:"", precios:{1:2.00, 2:2.00}, disponible:0, minimo:0, vendidas:0, activo:true }
+    { id:33, codigo:"INS-003", nombre:"toppers",                     descripcion:"", categoria:"Insumos",    subcategoria:"", precios:{1:2.00, 2:2.00}, disponible:0, minimo:0, vendidas:0, activo:true },
+
+    { id:47, codigo:"SER-001", nombre:"Personalización de torta",    descripcion:"Cargo adicional por diseño personalizado — depende del modelo", categoria:"Servicios", subcategoria:"", precios:{1:2.00, 2:2.00}, disponible:999999, minimo:0, vendidas:0, activo:true },
+    { id:48, codigo:"PAS-024", nombre:"Ponquesitos decorados",       descripcion:"Paquete de 4 unidades",  categoria:"Pastelería", subcategoria:"",   precios:{1:0, 2:0}, precioFijoBs:900, disponible:0, minimo:0, vendidas:0, activo:true }
   ],
 
   clientes: [
@@ -1323,7 +1351,10 @@ const precioUSD = p => {
   const def = D.tiposPrecio[0] && precios[D.tiposPrecio[0].id];
   return def != null ? def : (Object.values(precios)[0] || 0);
 };
-const precioBaseBs = p => precioUSD(p) * D.tasas.oficial;
+/* Un puñado de productos (los ponquesitos decorados) se cobran en un
+   monto fijo de bolívares, no en dólares: precioFijoBs manda sobre
+   los tipos de precio de arriba cuando está puesto. */
+const precioBaseBs = p => p.precioFijoBs != null ? p.precioFijoBs : precioUSD(p) * D.tasas.oficial;
 function signo(tipo){ return tipo === "euro" ? "€" : "$"; }
 function etiquetaTasa(tipo){
   return { oficial:"dólar oficial", euro:"euro oficial", mercado:"dólar de mercado" }[tipo];
@@ -3099,6 +3130,11 @@ function ventProducto(){
         '<span class="grupo-ent__fijo">$</span><input class="ent ent--cifra" id="pr-precio-' + t.id +
         '" inputmode="decimal" value="' + (precios[t.id] != null ? precios[t.id] : 0) + '"></div></div>').join("") +
       "</div></div>" +
+      '<div class="campo"><label class="campo__et">Precio fijo en bolívares <span class="tenue" style="font-weight:400">' +
+      "— opcional, anula los precios en dólares de arriba</span></label>" +
+      '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span><input class="ent ent--cifra" id="pr-preciofijo" inputmode="decimal" value="' +
+      (edita && edita.precioFijoBs != null ? edita.precioFijoBs : "") + '" placeholder="vacío = usa los de arriba"></div>' +
+      '<p class="campo__ay">Para lo poco que se cobra en un monto fijo de bolívares, como los ponquesitos decorados: no cambia con la tasa del día.</p></div>' +
       '<div id="pr-aviso"></div>' +
     '</div><div class="vent__pie">' +
       (edita ? '<button class="btn btn--peligro"' + (edita.comprometido ? " disabled" : "") +
@@ -4157,16 +4193,18 @@ const ACCIONES = {
     const subcategoria = (($("#pr-subcategoria") || {}).value || "").trim();
     const precios = {};
     D.tiposPrecio.forEach(t => { precios[t.id] = aNumero(($("#pr-precio-" + t.id) || {}).value); });
+    const fijoRaw = (($("#pr-preciofijo") || {}).value || "").trim();
+    const precioFijoBs = fijoRaw ? aNumero(fijoRaw) : null;
 
     let p;
     if(ds.id){
       p = D.productos.find(x => x.id === Number(ds.id));
       const eraActivo = p.activo !== false;
       const activo = ($("#pr-activo") || { checked:true }).checked;
-      Object.assign(p, { nombre, descripcion, categoria, subcategoria, precios, activo });
+      Object.assign(p, { nombre, descripcion, categoria, subcategoria, precios, precioFijoBs, activo });
       anotar((activo === eraActivo ? "Editó" : (activo ? "Reactivó" : "Inactivó")) + " el producto " + p.nombre);
     } else {
-      p = { id: ++D.seqProd, codigo:"", nombre, descripcion, categoria, subcategoria, precios,
+      p = { id: ++D.seqProd, codigo:"", nombre, descripcion, categoria, subcategoria, precios, precioFijoBs,
             disponible:0, comprometido:0, minimo:0, vendidas:0, activo:true };
       D.productos.push(p);
       anotar("Creó el producto " + p.nombre);
