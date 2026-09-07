@@ -32,6 +32,10 @@
   --sol-vela:#FDF4E6;
   --noche:#16110B;
   --tinta:#542825;
+  /* Lo que se escribe encima del color de marca. Con ámbar es tinta
+     oscura; con azul o vino tiene que ser claro, y por eso es una
+     variable y no un #16110B suelto repartido por la hoja. */
+  --sobre-sol:#16110B;
 
   /* Superficies — el fondo es blanco; los grises salen de Noche, no de Cal */
   --papel:#FFFFFF;
@@ -159,7 +163,7 @@ body{
   border:0;background:transparent;color:var(--rail-texto-2);cursor:pointer;
   padding:.28rem .7rem;border-radius:var(--rf);font-size:.8rem;line-height:1.4;
 }
-.seg button[aria-pressed="true"]{background:var(--sol);color:#16110B;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--sol);color:var(--sobre-sol);font-weight:600}
 .seg button:hover:not([aria-pressed="true"]){color:var(--rail-texto)}
 
 main{padding:0 0 6rem}
@@ -194,7 +198,7 @@ main{padding:0 0 6rem}
 .btn:active{transform:translateY(1px)}
 .btn:focus-visible{outline:none;box-shadow:var(--foco)}
 .btn[disabled],.btn.es-off{opacity:.42;pointer-events:none}
-.btn--sol{background:var(--sol);color:#16110B;box-shadow:inset 0 -1px 0 rgba(22,17,11,.18)}
+.btn--sol{background:var(--sol);color:var(--sobre-sol);box-shadow:inset 0 -1px 0 rgba(22,17,11,.18)}
 .btn--sol:hover,.btn--sol.es-hover{background:var(--sol-90)}
 .btn--noche{background:var(--noche);color:#FBF2E4}
 .btn--noche:hover,.btn--noche.es-hover{background:#241B12}
@@ -228,7 +232,7 @@ main{padding:0 0 6rem}
 .btn-grupo>.btn:first-child{border-radius:var(--r2) 0 0 var(--r2);margin-left:0}
 .btn-grupo>.btn:last-child{border-radius:0 var(--r2) var(--r2) 0}
 .btn-grupo>.btn.es-activo{background:var(--noche);color:#FBF2E4;border-color:var(--noche);z-index:1}
-:root[data-theme="dark"] .btn-grupo>.btn.es-activo{background:var(--sol);color:#16110B;border-color:var(--sol)}
+:root[data-theme="dark"] .btn-grupo>.btn.es-activo{background:var(--sol);color:var(--sobre-sol);border-color:var(--sol)}
 
 .alt{display:inline-flex;gap:.25rem;background:var(--sup-2);padding:.25rem;border-radius:var(--r2);border:1px solid var(--linea)}
 .alt button{border:0;background:transparent;padding:.35rem .75rem;border-radius:var(--r1);font-size:.87rem;cursor:pointer;color:var(--texto-2)}
@@ -255,7 +259,7 @@ main{padding:0 0 6rem}
 .contador{
   display:inline-flex;min-width:1.25rem;height:1.25rem;padding:0 .35rem;
   align-items:center;justify-content:center;border-radius:var(--rf);
-  background:var(--sol);color:#16110B;font-size:.72rem;font-weight:650;
+  background:var(--sol);color:var(--sobre-sol);font-size:.72rem;font-weight:650;
   font-family:var(--mono);font-variant-numeric:tabular-nums;
 }
 .contador--noche{background:var(--noche);color:#F2E7D6}
@@ -315,8 +319,10 @@ select.ent{appearance:none;padding-right:2rem;cursor:pointer;
 .marca-op input:hover{border-color:var(--texto-3)}
 .marca-op input:focus-visible{outline:none;box-shadow:var(--foco)}
 .marca-op input:checked{background:var(--sol);border-color:var(--sol)}
-.marca-op input[type=checkbox]:checked::after{content:"";position:absolute;inset:0;background:no-repeat center/.72rem url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316110B' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
-.marca-op input[type=radio]:checked::after{content:"";position:absolute;inset:.28rem;border-radius:50%;background:#16110B}
+.marca-op input[type=checkbox]:checked::after{content:"";position:absolute;inset:0;background:var(--sobre-sol);
+  -webkit-mask:no-repeat center/.72rem url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  mask:no-repeat center/.72rem url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
+.marca-op input[type=radio]:checked::after{content:"";position:absolute;inset:.28rem;border-radius:50%;background:var(--sobre-sol)}
 .marca-op input[disabled]{opacity:.45;cursor:not-allowed}
 
 .palanca{position:relative;display:inline-flex;align-items:center;gap:.6rem;cursor:pointer;font-size:.92rem}
@@ -342,7 +348,7 @@ select.ent{appearance:none;padding-right:2rem;cursor:pointer;
 }
 .numpad button:hover{background:var(--sup-2);border-color:var(--linea-2)}
 .numpad button:active{background:var(--sol-vela);border-color:var(--sol)}
-.numpad button.es-sol{background:var(--sol);border-color:var(--sol);color:#16110B}
+.numpad button.es-sol{background:var(--sol);border-color:var(--sol);color:var(--sobre-sol)}
 
 /* ═══ DINERO Y CIFRAS ══════════════════════════════════════════ */
 .cifra{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-weight:550}
@@ -364,7 +370,7 @@ select.ent{appearance:none;padding-right:2rem;cursor:pointer;
 .cifra-t{background:var(--sup);border:1px solid var(--linea);border-radius:var(--r3);padding:1.05rem 1.15rem;display:flex;flex-direction:column;gap:.35rem}
 .cifra-t__et{font-size:.82rem;color:var(--texto-2);display:flex;align-items:center;gap:.4rem}
 .cifra-t__pie{font-size:.78rem;color:var(--texto-3);display:flex;align-items:center;gap:.45rem;margin-top:.15rem}
-.cifra-t--sol{background:var(--sol);border-color:var(--sol);color:#16110B}
+.cifra-t--sol{background:var(--sol);border-color:var(--sol);color:var(--sobre-sol)}
 .cifra-t--sol .cifra-t__et,.cifra-t--sol .cifra-t__pie{color:rgba(22,17,11,.72)}
 .cifra-t--noche{background:var(--noche);border-color:var(--noche);color:#F7EFE2}
 .cifra-t--noche .cifra-t__et,.cifra-t--noche .cifra-t__pie{color:#A2907A}
@@ -427,7 +433,7 @@ table.tabla{width:100%;border-collapse:collapse;font-size:.9rem}
   cursor:pointer;font-size:.87rem;color:var(--texto-2);font-family:var(--mono)}
 .pagina button:hover{background:var(--sup-2);color:var(--texto)}
 .pagina button[aria-current="page"]{background:var(--noche);color:#F7EFE2;font-weight:600}
-:root[data-theme="dark"] .pagina button[aria-current="page"]{background:var(--sol);color:#16110B}
+:root[data-theme="dark"] .pagina button[aria-current="page"]{background:var(--sol);color:var(--sobre-sol)}
 
 .menu{background:var(--sup);border:1px solid var(--linea);border-radius:var(--r3);box-shadow:var(--sombra-2);padding:.32rem;min-width:13rem}
 .menu__enc{padding:.4rem .6rem .3rem;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-3)}
@@ -537,7 +543,7 @@ table.tabla{width:100%;border-collapse:collapse;font-size:.9rem}
 .pantalla__cuerpo{display:grid;grid-template-columns:52px minmax(0,1fr);min-height:20rem}
 .mini-rail{background:var(--rail);display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.6rem 0}
 .mini-rail a{width:2rem;height:2rem;border-radius:var(--r2);display:flex;align-items:center;justify-content:center;color:var(--rail-texto-2);text-decoration:none}
-.mini-rail a.es-activo{background:var(--sol);color:#16110B}
+.mini-rail a.es-activo{background:var(--sol);color:var(--sobre-sol)}
 .mini-rail .relleno{flex:1}
 .pant{padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem;min-width:0;background:var(--papel)}
 .pant__cab{display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap}
@@ -780,7 +786,7 @@ body{overflow-x:hidden;background:var(--papel)}
 .paso-card.es-listo{border-color:var(--verde-linea)}
 .paso-card__cab{display:flex;align-items:center;gap:.7rem}
 .paso-card__n{width:2rem;height:2rem;border-radius:50%;flex:none;display:flex;align-items:center;
-  justify-content:center;font-weight:700;font-size:1rem;background:var(--sol);color:#16110B}
+  justify-content:center;font-weight:700;font-size:1rem;background:var(--sol);color:var(--sobre-sol)}
 .es-bloqueado .paso-card__n{background:var(--sup-3);color:var(--texto-3)}
 .es-listo .paso-card__n{background:var(--verde);color:var(--papel)}
 .paso-card__t{font-size:1.15rem;font-weight:650}
@@ -987,6 +993,60 @@ tr.pulsable:hover td{background:var(--sup-2)}
 .barra-parte{height:.4rem;border-radius:var(--rf);background:var(--sup-3);overflow:hidden;margin-top:.3rem}
 .barra-parte>i{display:block;height:100%;background:var(--sol)}
 .ticket__marca img{height:22px;width:auto;display:block;margin:0 auto}
+
+/* ── Ajustes: una lista, como la de un teléfono ────────────────
+   Antes eran catorce tarjetas abiertas a la vez y nadie sabía dónde
+   mirar. Ahora se ve el nombre de cada cosa y lo que tiene puesto;
+   lo demás aparece al abrirla, y solo una a la vez. */
+.aj{max-width:46rem;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1.4rem}
+.aj__rot{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--texto-3);
+  font-weight:650;margin:0 0 .45rem .2rem}
+.aj-grupo{background:var(--sup);border:1px solid var(--linea);border-radius:var(--r3);overflow:hidden}
+.aj-fila{display:flex;align-items:center;gap:.8rem;width:100%;padding:.9rem 1rem;text-align:left;
+  background:transparent;border:0;border-top:1px solid var(--linea);cursor:pointer;color:inherit}
+.aj-grupo>.aj-fila:first-child{border-top:0}
+.aj-fila:hover{background:var(--sup-2)}
+.aj-fila:focus-visible{outline:none;box-shadow:inset var(--foco)}
+.aj-fila__ic{width:2.1rem;height:2.1rem;border-radius:var(--r2);flex:none;display:flex;align-items:center;
+  justify-content:center;background:var(--sol-vela);color:var(--sol-70)}
+.aj-fila__ic .ic{width:1.15rem;height:1.15rem}
+.aj-fila__c{min-width:0;flex:1}
+.aj-fila__t{display:block;font-weight:600;font-size:.95rem;line-height:1.35}
+.aj-fila__v{display:block;font-size:.81rem;color:var(--texto-2);line-height:1.4;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aj-fila__ch{flex:none;color:var(--texto-3);transition:transform .18s ease}
+.aj-fila[aria-expanded="true"]{background:var(--sup-2)}
+.aj-fila[aria-expanded="true"] .aj-fila__ch{transform:rotate(180deg)}
+.aj-fila[aria-expanded="true"] .aj-fila__ic{background:var(--sol);color:var(--sobre-sol)}
+.aj-panel{padding:.2rem 1rem 1.1rem;background:var(--sup-2);border-top:1px dashed var(--linea);
+  animation:aj-abre .18s ease-out}
+.aj-panel>*+*{margin-top:.8rem}
+@keyframes aj-abre{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (max-width:640px){
+  .aj-fila{padding:.85rem .8rem;gap:.65rem}
+  .aj-panel{padding:.2rem .8rem 1rem}
+}
+
+/* Los colores del sistema: muestras grandes, que se escogen con el ojo */
+.paletas{display:grid;grid-template-columns:repeat(auto-fill,minmax(7.5rem,1fr));gap:.5rem}
+.paleta{display:flex;align-items:center;gap:.55rem;padding:.5rem .6rem;border:1.5px solid var(--linea);
+  border-radius:var(--r2);background:var(--sup);cursor:pointer;text-align:left;color:inherit}
+.paleta:hover{border-color:var(--linea-2)}
+.paleta[aria-pressed="true"]{border-color:var(--sol);background:var(--sol-vela)}
+.paleta__m{width:1.6rem;height:1.6rem;border-radius:50%;flex:none;position:relative;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.paleta[aria-pressed="true"] .paleta__m::after{content:"";position:absolute;inset:.3rem;border-radius:50%;
+  background:var(--paleta-sobre)}
+.paleta__n{font-size:.86rem;font-weight:600;min-width:0}
+
+/* El logotipo: se ve sobre claro y sobre noche, que en los dos vive */
+.logo-prueba{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.logo-prueba>div{border:1px solid var(--linea);border-radius:var(--r2);padding:.9rem;display:flex;
+  align-items:center;justify-content:center;min-height:4.6rem}
+.logo-prueba__claro{background:#FFFFFF}
+.logo-prueba__noche{background:#16110B}
+.logo-prueba img{max-height:2.6rem;max-width:100%;width:auto;display:block}
+.logo-prueba p{font-size:.72rem;color:var(--texto-3);text-align:center}
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
@@ -1049,6 +1109,8 @@ tr.pulsable:hover td{background:var(--sup-2)}
 <symbol id="i-lista" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
 <symbol id="i-caja-abierta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h18v12H3zM3 8l2-4h14l2 4M12 4v4M8 13h8"/></symbol>
 <symbol id="i-etiqueta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.3"/></symbol>
+<symbol id="i-imagen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.8" cy="9" r="1.6"/><path d="m3.5 17.5 4.6-4.3a2 2 0 0 1 2.7 0l6.7 6.3M15 13.6l1.5-1.4a2 2 0 0 1 2.7 0l1.3 1.2"/></symbol>
+<symbol id="i-paleta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.5-1.1a1.6 1.6 0 0 1 1.2-2.7H16A5 5 0 0 0 21 10c0-3.9-4-7-9-7z"/><circle cx="7.5" cy="11.5" r="1.1"/><circle cx="10.5" cy="7.5" r="1.1"/><circle cx="15.5" cy="8.5" r="1.1"/></symbol>
 </svg>
 
 <div id="app"></div>
@@ -1115,10 +1177,14 @@ const D = {
      las dos. Eso es lo que hace que el mostrador ofrezca actualizarse. */
   version: "1.0.5",
   fechaVersion: "05/09/2026",
-  negocio: { nombre:"Panadería y Pastelería", rif:"J-40123456-7", direccion:"Av. Bolívar, local 4" },
+  /* logo: null = el de HAYAI. Si el negocio sube el suyo, aquí queda
+     achicado y en base64, que es lo que cabe en el navegador. */
+  negocio: { nombre:"Panadería y Pastelería", rif:"J-40123456-7", direccion:"Av. Bolívar, local 4",
+             logo:null },
   usuario: null,
   entradaHora: 0,
   pantalla: "inicio",
+  ajusteAbierto: null,   // qué sección de Ajustes está desplegada
   enLinea: typeof navigator !== "undefined" && navigator.onLine !== false,
   ventana: null,
   tour: null,        // índice del paso de la sesión guiada
@@ -1158,7 +1224,7 @@ const D = {
      encima. Quien quiera noche lo cambia con el botón de arriba, al lado
      de su nombre, y ahí sí se queda como lo dejó. */
   ajustes: { tema: "light", tasaPref: "oficial", moneda: "bs", efectivo: true,
-             letra: "mediana" },
+             letra: "mediana", color: "ambar" },
 
   usuarios: [
     { id:1, nombre:"Yorbin Rojas", usuario:"yorbin", clave:"1234", rol:"cajero",   iniciales:"YR" },
@@ -1513,7 +1579,9 @@ function cargar(){
   if(!g || g.formato !== FORMATO) return false;   // otra forma: se siembra de nuevo
 
   try{
-    if(g.negocio)   D.negocio   = g.negocio;
+    /* Lo guardado antes del logotipo propio no trae la llave: se le
+       pone en null para que valga el de HAYAI. */
+    if(g.negocio)   D.negocio   = Object.assign({ logo:null }, g.negocio);
     if(g.usuarios)  D.usuarios  = g.usuarios;
     if(g.productos) D.productos = g.productos;
     if(g.tiposPrecio) D.tiposPrecio = g.tiposPrecio;
@@ -1734,10 +1802,12 @@ const PANTALLAS = {
     ]},
 
   ajustes: { n:"Ajustes", ic:"ajustes", tecla:"",
-    voz:"Cómo se cobra y de qué tamaño se ve",
+    voz:"Cómo se cobra, cómo se ve y cómo se llama",
     guia:[
-      { q:"tasa",     t:"La tasa que se lee", d:"Escoger aquí cambia el equivalente que aparece en pantalla, no lo que se cobra. El cobro siempre se convierte con la tasa oficial." },
-      { q:"fuente",   t:"De dónde sale la tasa", d:"Se trae sola del BCV al abrir y cada media hora. Si la fuente no contesta se queda la última conocida y aquí lo dice; siempre puedes escribirla a mano." },
+      { q:"tasa",     t:"Una lista, no un muro", d:"Cada renglón dice qué es y qué tiene puesto ahora mismo. Se toca y se abre debajo; se toca otra vez y se cierra. Solo hay uno abierto a la vez, para no tener que leer la pantalla entera." },
+      { q:"fuente",   t:"De dónde sale la tasa", d:"Se trae sola del BCV al abrir y cada media hora. Si la fuente no contesta se queda la última conocida y el renglón lo dice; siempre puedes escribirla a mano." },
+      { q:"logo",     t:"El logotipo del negocio", d:"El que sube el negocio manda sobre el de HAYAI y sale arriba y en la pantalla de entrada. Un PNG con el fondo transparente es el que se ve bien de día y de noche." },
+      { q:"color",    t:"El color del sistema", d:"Ámbar es el de la casa, pero hay ocho. Cambia el color de la marca y nada más: el verde de cobrado y el rojo de anulado quedan como están, que esos dos significan algo." },
       { q:"letra",    t:"El tamaño de la letra", d:"Uno solo para todos los aparatos, y cambia al instante. La tableta del mostrador suele ir en Grande. Claro o noche se cambia arriba, al lado de tu nombre." }
     ]},
 
@@ -1765,7 +1835,74 @@ const TODAS = ORDEN.concat(["usuarios","ajustes"]);
 
 
 /* ── El menú son tarjetas ──────────────────────────────────────── */
+/* ── Los colores del sistema ────────────────────────────────────
+   Ámbar es el de la casa. Escoger otro cambia el color de marca y
+   nada más: el papel sigue blanco, las cifras siguen en su sitio y
+   el verde de cobrado y el rojo de anulado no se tocan, que esos
+   dos significan algo y no son decoración.
+   De cada color salen los demás tonos con una misma receta, para
+   que ninguno quede a mano y todos se lleven igual de bien con el
+   modo noche. `sobre` es lo que se escribe encima: tinta oscura si
+   el color es claro, blanco si es oscuro. */
+const PALETAS = [
+  { id:"ambar",     n:"Ámbar",     d:"el de la casa", base:"#EF9D25", sobre:"#16110B" },
+  { id:"verde",     n:"Verde",     d:"campo",         base:"#2E9E63", sobre:"#16110B" },
+  { id:"turquesa",  n:"Turquesa",  d:"agua",          base:"#0E9AA0", sobre:"#16110B" },
+  { id:"azul",      n:"Azul",      d:"tarde",         base:"#2F6FD0", sobre:"#FFFFFF" },
+  { id:"morado",    n:"Morado",    d:"uva",           base:"#7B57D8", sobre:"#FFFFFF" },
+  { id:"rosado",    n:"Rosado",    d:"guayaba",       base:"#C93A76", sobre:"#FFFFFF" },
+  { id:"rojo",      n:"Rojo",      d:"tomate",        base:"#D8442E", sobre:"#FFFFFF" },
+  { id:"chocolate", n:"Chocolate", d:"cacao",         base:"#8A5A2B", sobre:"#FFFFFF" }
+];
+
+function leerHex(h){
+  const v = String(h).replace("#", "");
+  return [0, 2, 4].map(i => parseInt(v.slice(i, i + 2), 16));
+}
+function mezclar(hex, con, cuanto){
+  const a = leerHex(hex), b = leerHex(con);
+  return "#" + [0,1,2].map(i =>
+    Math.round(a[i] + (b[i] - a[i]) * cuanto).toString(16).padStart(2, "0")).join("").toUpperCase();
+}
+function paletaActual(){
+  return PALETAS.find(p => p.id === D.ajustes.color) || PALETAS[0];
+}
+/* Los tonos que hacen falta, para el modo que esté puesto. Sirve
+   igual para pintar el sistema entero que para la muestra de la
+   lista de colores. */
+function tonos(base, noche){
+  return {
+    sol:   base,
+    sol90: mezclar(base, "#000000", .10),
+    sol70: noche ? mezclar(base, "#FFFFFF", .35) : mezclar(base, "#000000", .22),
+    luz:   noche ? mezclar(base, "#16110B", .72) : mezclar(base, "#FFFFFF", .78),
+    vela:  noche ? mezclar(base, "#16110B", .86) : mezclar(base, "#FFFFFF", .93)
+  };
+}
+const VARS_COLOR = ["--sol","--sol-90","--sol-70","--sol-luz","--sol-vela","--foco","--sobre-sol"];
+function aplicarColor(){
+  const raiz = document.documentElement.style;
+  const p = paletaActual();
+  /* Ámbar es el que ya está escrito en la hoja de estilo: se quitan
+     los sobrescritos y queda exactamente como siempre, sin que la
+     receta le corra un tono. */
+  if(p.id === "ambar"){ VARS_COLOR.forEach(k => raiz.removeProperty(k)); return; }
+  const t = tonos(p.base, temaEfectivo() === "dark");
+  raiz.setProperty("--sol", t.sol);
+  raiz.setProperty("--sol-90", t.sol90);
+  raiz.setProperty("--sol-70", t.sol70);
+  raiz.setProperty("--sol-luz", t.luz);
+  raiz.setProperty("--sol-vela", t.vela);
+  raiz.setProperty("--foco", "0 0 0 3px rgba(" + leerHex(p.base).join(",") + ",.42)");
+  raiz.setProperty("--sobre-sol", p.sobre);
+}
+
 function logoImg(alto){
+  /* El del negocio, si lo subió: ese es uno solo y vale para los dos
+     modos, porque nadie va a preparar dos versiones de su logotipo. */
+  if(D.negocio.logo)
+    return '<span class="logo-hayai" role="img" aria-label="' + esc(D.negocio.nombre) + '">' +
+      '<img src="' + D.negocio.logo + '" alt="" style="height:' + alto + ';width:auto"></span>';
   /* Dos versiones del mismo logotipo: en Tinta sobre claro, en Cal sobre noche.
      Las dos van en el HTML y el CSS enseña la que toca. */
   return '<span class="logo-hayai" role="img" aria-label="HAYAI">' +
@@ -2509,130 +2646,225 @@ function vistaCierre(){
       "</div></div></div>";
 }
 
-/* ── Ajustes ───────────────────────────────────────────────────── */
+/* ── Ajustes ───────────────────────────────────────────────────────
+   Una lista, como la del teléfono. Cada renglón dice qué es y qué
+   tiene puesto ahora mismo; los campos aparecen solo al abrirlo, y
+   se abre uno a la vez. Antes eran diez tarjetas destapadas de golpe
+   y había que leerlas todas para encontrar una cosa.
+   ═════════════════════════════════════════════════════════════════ */
+function filaAjuste(k, icono, titulo, valor, cuerpo){
+  const abierto = D.ajusteAbierto === k;
+  return '<button class="aj-fila" data-a="abrirAjuste" data-v="' + k + '" data-tour="' + k +
+      '" aria-expanded="' + abierto + '">' +
+    '<span class="aj-fila__ic">' + ic(icono) + "</span>" +
+    '<span class="aj-fila__c"><span class="aj-fila__t">' + titulo + "</span>" +
+      '<span class="aj-fila__v">' + valor + "</span></span>" +
+    '<span class="aj-fila__ch">' + ic("abajo") + "</span></button>" +
+    /* El cuerpo se arma solo si está abierto: lo que no se ve, no se pinta. */
+    (abierto ? '<div class="aj-panel">' + cuerpo() + "</div>" : "");
+}
+
+function grupoAjustes(rot, filas){
+  const dentro = filas.filter(Boolean).join("");
+  return dentro ? '<div><p class="aj__rot">' + rot + '</p><div class="aj-grupo">' + dentro + "</div></div>" : "";
+}
+
 function vistaAjustes(){
   const a = D.ajustes;
-  const tasaOp = [["oficial","Dólar oficial"],["euro","Euro oficial"],["mercado","Dólar de mercado"]].map(t =>
-    '<label class="marca-op"><input type="radio" name="tasa" data-a="tasaPref" data-v="' + t[0] + '"' +
-    (a.tasaPref === t[0] ? " checked" : "") + (hayTasa(t[0]) ? "" : " disabled") +
-    "><span><b>" + t[1] + '</b> <span class="tenue">— ' + tasaTexto(t[0]) +
-    (hayTasa(t[0]) ? " Bs" : ", escríbela abajo") + "</span></span></label>").join("");
+  const soyDuena = D.usuario && D.usuario.rol === "duena";
+  const NOMBRE_LETRA = { pequena:"Pequeña", mediana:"Mediana", grande:"Grande" };
 
-  const letraOp = [["pequena","Pequeña","la que más cabe en pantalla"],
-                   ["mediana","Mediana","la de siempre"],
-                   ["grande","Grande","se lee de lejos, como en la tableta del mostrador"]].map(t =>
-    '<label class="marca-op"><input type="radio" name="letra" data-a="letra" data-v="' + t[0] + '"' +
-    (a.letra === t[0] ? " checked" : "") + "><span><b>" + t[1] + '</b> <span class="tenue">— ' + t[2] +
-    "</span></span></label>").join("");
+  /* ── Los cuerpos, cada uno donde se abre ───────────────────── */
+  const cuerpoTasa = () =>
+    '<div class="col" style="gap:.5rem">' +
+      [["oficial","Dólar oficial"],["euro","Euro oficial"],["mercado","Dólar de mercado"]].map(t =>
+        '<label class="marca-op"><input type="radio" name="tasa" data-a="tasaPref" data-v="' + t[0] + '"' +
+        (a.tasaPref === t[0] ? " checked" : "") + (hayTasa(t[0]) ? "" : " disabled") +
+        "><span><b>" + t[1] + '</b> <span class="tenue">— ' + tasaTexto(t[0]) +
+        (hayTasa(t[0]) ? " Bs" : ", escríbela en «De dónde sale la tasa»") + "</span></span></label>").join("") + "</div>" +
+    '<div class="aviso aviso--sol"><span class="aviso__ic">' + ic("info") + "</span><div>" +
+    '<p class="aviso__d">Esto cambia <b>el equivalente que se lee</b> en pantalla, no lo que se cobra. ' +
+    "El cobro siempre se convierte con la tasa oficial.</p></div></div>";
 
-  return '<div class="dos"><div class="col">' +
-      '<div class="tarj" data-tour="tasa"><div class="tarj__cab">' + ic("tasa","ambar") + "<h4>Tasa predeterminada</h4></div>" +
-      '<div class="col" style="gap:.5rem">' + tasaOp + "</div>" +
-      '<div class="aviso aviso--sol" style="margin-top:.8rem"><span class="aviso__ic">' + ic("info") + "</span><div>" +
-      '<p class="aviso__d">Esto cambia <b>el equivalente que se lee</b> en pantalla, no lo que se cobra. El cobro siempre se convierte con la tasa oficial.</p></div></div></div>' +
+  const cuerpoFuente = () =>
+    '<p class="nota-pie">La oficial y la de mercado se traen solas de <b>' + esc(FUENTE_TASA.nombre) +
+      "</b> al abrir el sistema y cada media hora" +
+      (D.tasaFecha ? ". Última que llegó: <b>" + fechaCorta(D.tasaFecha) + "</b>." : ".") +
+      (D.tasaEstado === "fallo" ? ' <span class="rojo">Ahora mismo no contesta: ' + esc(D.tasaError) +
+        ". Escríbela a mano abajo.</span>" : "") + "</p>" +
+    '<div class="rejilla-3" style="gap:.5rem">' +
+      '<div class="campo"><label class="campo__et" for="t-oficial">Dólar oficial</label>' +
+      '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
+      '<input class="ent ent--cifra" id="t-oficial" inputmode="decimal" value="' + (hayTasa("oficial") ? num(D.tasas.oficial, 4) : "") + '"></div></div>' +
+      '<div class="campo"><label class="campo__et" for="t-euro">Euro' +
+        (D.euroAMano ? " (tuyo)" : (D.euroCalculado ? " (calculado)" : " oficial")) + "</label>" +
+      '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
+      '<input class="ent ent--cifra" id="t-euro" inputmode="decimal" placeholder="sin cargar" value="' + (hayTasa("euro") ? num(D.tasas.euro, 4) : "") + '"></div></div>' +
+      '<div class="campo"><label class="campo__et" for="t-mercado">Dólar de mercado</label>' +
+      '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
+      '<input class="ent ent--cifra" id="t-mercado" inputmode="decimal" value="' + (hayTasa("mercado") ? num(D.tasas.mercado, 4) : "") + '"></div></div></div>' +
+    '<div class="fila" style="gap:.5rem;flex-wrap:wrap"><button class="btn btn--contorno" data-a="recargarTasa">' +
+      ic("refrescar") + "Volver a traerla del BCV</button>" +
+    '<button class="btn btn--sol" style="margin-left:auto" data-a="guardarTasas">Guardar tasas</button></div>' +
+    '<p class="nota-pie">' + (D.euroAMano
+      ? "El euro está como lo escribiste tú: mientras siga ahí, el sistema no lo toca."
+      : (D.euroCalculado
+          ? "El euro no lo publica suelto ninguna fuente verificada: ese sale <b>calculado</b> con el dólar del BCV y el cambio euro/dólar del día. Si tienes el exacto, escríbelo y manda el tuyo."
+          : "El euro del BCV no lo sirve ninguna fuente pública verificada; se intenta calcular con el cambio del día y, si no, se escribe a mano.")) + " " +
+    "Cambiar una tasa no recalcula nada de lo ya cobrado: cada documento guarda la suya.</p>";
 
-      '<div class="tarj" data-tour="fuente"><div class="tarj__cab">' + ic("refrescar","ambar") + "<h4>De dónde sale la tasa</h4>" +
-      estadoTasa() + "</div>" +
-      '<p class="nota-pie" style="margin-bottom:.7rem">La oficial y la de mercado se traen solas de <b>' + esc(FUENTE_TASA.nombre) +
-        "</b> al abrir el sistema y cada media hora" +
-        (D.tasaFecha ? ". Última que llegó: <b>" + fechaCorta(D.tasaFecha) + "</b>." : ".") +
-        (D.tasaEstado === "fallo" ? ' <span class="rojo">Ahora mismo no contesta: ' + esc(D.tasaError) + ". Escríbela a mano abajo.</span>" : "") + "</p>" +
-      '<div class="rejilla-3" style="gap:.5rem">' +
-        '<div class="campo"><label class="campo__et" for="t-oficial">Dólar oficial</label>' +
-        '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
-        '<input class="ent ent--cifra" id="t-oficial" inputmode="decimal" value="' + (hayTasa("oficial") ? num(D.tasas.oficial, 4) : "") + '"></div></div>' +
-        '<div class="campo"><label class="campo__et" for="t-euro">Euro' +
-          (D.euroAMano ? " (tuyo)" : (D.euroCalculado ? " (calculado)" : " oficial")) + "</label>" +
-        '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
-        '<input class="ent ent--cifra" id="t-euro" inputmode="decimal" placeholder="sin cargar" value="' + (hayTasa("euro") ? num(D.tasas.euro, 4) : "") + '"></div></div>' +
-        '<div class="campo"><label class="campo__et" for="t-mercado">Dólar de mercado</label>' +
-        '<div class="grupo-ent"><span class="grupo-ent__fijo">Bs</span>' +
-        '<input class="ent ent--cifra" id="t-mercado" inputmode="decimal" value="' + (hayTasa("mercado") ? num(D.tasas.mercado, 4) : "") + '"></div></div></div>' +
-      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="recargarTasa">' + ic("refrescar") + "Volver a traerla del BCV</button>" +
-      '<button class="btn btn--sol" style="margin-left:auto" data-a="guardarTasas">Guardar tasas</button></div>' +
-      '<p class="nota-pie" style="margin-top:.6rem">' + (D.euroAMano
-        ? "El euro está como lo escribiste tú: mientras siga ahí, el sistema no lo toca."
-        : (D.euroCalculado
-            ? "El euro no lo publica suelto ninguna fuente verificada: ese sale <b>calculado</b> con el dólar del BCV y el cambio euro/dólar del día. Si tienes el exacto, escríbelo y manda el tuyo."
-            : "El euro del BCV no lo sirve ninguna fuente pública verificada; se intenta calcular con el cambio del día y, si no, se escribe a mano.")) + " " +
-      "Cambiar una tasa no recalcula nada de lo ya cobrado: cada documento guarda la suya.</p></div>" +
+  const cuerpoMoneda = () =>
+    '<div class="alt ancho">' + [["bs","Bolívares"],["divisa","Divisa"]].map(m =>
+      '<button aria-pressed="' + (a.moneda === m[0]) + '" data-a="moneda" data-v="' + m[0] + '" style="flex:1">' +
+      m[1] + "</button>").join("") + "</div>" +
+    '<p class="nota-pie">Cuál de las dos cifras va de primera en Inicio y en el cierre. ' +
+    "El cobro no cambia: siempre se convierte con la tasa oficial y el documento guarda la suya.</p>";
 
-      '<div class="tarj"><div class="tarj__cab">' + ic("calculadora","ambar") + "<h4>En qué moneda se lee</h4></div>" +
-      '<div class="alt ancho">' + [["bs","Bolívares"],["divisa","Divisa"]].map(m =>
-        '<button aria-pressed="' + (a.moneda === m[0]) + '" data-a="moneda" data-v="' + m[0] + '" style="flex:1">' +
-        m[1] + "</button>").join("") + "</div>" +
-      '<p class="nota-pie" style="margin-top:.6rem">Cuál de las dos cifras va de primera en Inicio y en el cierre. ' +
-      "El cobro no cambia: siempre se convierte con la tasa oficial y el documento guarda la suya.</p></div>" +
+  const cuerpoEfectivo = () =>
+    '<label class="palanca"><input type="checkbox" data-a="efectivo"' + (a.efectivo ? " checked" : "") +
+      ">Aceptar efectivo</label>" +
+    '<p class="nota-pie">' + (a.efectivo
+      ? "Efectivo en bolívares y en divisa aparecen como formas de pago en Venta y en Cobrar."
+      : "Apagado: las formas de pago en efectivo desaparecieron de todas las pantallas de cobro, no solo de una.") + "</p>";
 
-      (D.usuario && D.usuario.rol === "duena" ?
-      '<div class="tarj"><div class="tarj__cab">' + ic("billete","ambar") + "<h4>Tipos de precio</h4>" +
-      '<span class="chip chip--liso chip--xs chip--hueco">' + plural(D.tiposPrecio.length, "tipo", "tipos") + "</span></div>" +
-      '<p class="min tenue">Detal, mayor, y los que hagan falta. Cada producto tiene un renglón de precio por cada tipo de aquí.</p>' +
-      '<div class="col" style="gap:0;margin-top:.6rem">' + D.tiposPrecio.map(t =>
-        '<div class="linea-v"><span class="linea-v__n">' + esc(t.nombre) + "</span>" +
-        '<span class="fila" style="gap:.3rem">' +
-        '<button class="btn btn--fantasma btn--sm btn--icono" data-a="ventana" data-v="tipoPrecio" data-id="' + t.id +
-          '" title="Renombrar">' + ic("lapiz","ic--sm") + "</button>" +
-        '<button class="btn btn--fantasma btn--sm btn--icono" data-a="ventana" data-v="borrarTipoPrecio" data-id="' + t.id +
-          '"' + (D.tiposPrecio.length <= 1 ? " disabled" : "") + ' title="' +
-          (D.tiposPrecio.length <= 1 ? "Tiene que quedar al menos un tipo de precio" : "Eliminar") + '">' +
-          ic("papelera","ic--sm") + "</button></span></div>").join("") + "</div>" +
-      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="tipoPrecio">' +
-        ic("mas") + "Nuevo tipo de precio</button></div></div>" : "") +
-    "</div>" +
+  const cuerpoTipos = () =>
+    '<p class="min tenue">Detal, mayor, y los que hagan falta. Cada producto tiene un renglón de precio por cada tipo de aquí.</p>' +
+    '<div class="col" style="gap:0">' + D.tiposPrecio.map(t =>
+      '<div class="linea-v"><span class="linea-v__n">' + esc(t.nombre) + "</span>" +
+      '<span class="fila" style="gap:.3rem">' +
+      '<button class="btn btn--fantasma btn--sm btn--icono" data-a="ventana" data-v="tipoPrecio" data-id="' + t.id +
+        '" title="Renombrar">' + ic("lapiz","ic--sm") + "</button>" +
+      '<button class="btn btn--fantasma btn--sm btn--icono" data-a="ventana" data-v="borrarTipoPrecio" data-id="' + t.id +
+        '"' + (D.tiposPrecio.length <= 1 ? " disabled" : "") + ' title="' +
+        (D.tiposPrecio.length <= 1 ? "Tiene que quedar al menos un tipo de precio" : "Eliminar") + '">' +
+        ic("papelera","ic--sm") + "</button></span></div>").join("") + "</div>" +
+    '<button class="btn btn--contorno" style="align-self:flex-start" data-a="ventana" data-v="tipoPrecio">' +
+      ic("mas") + "Nuevo tipo de precio</button>";
 
-    '<div class="col">' +
-      '<div class="tarj" data-tour="instalar"><div class="tarj__cab">' + ic("descargar","ambar") + "<h4>Tenerla como aplicación</h4>" +
-      (D.pwa.instalada ? '<span class="chip chip--verde chip--xs">Instalada</span>' : "") + "</div>" +
-      (D.pwa.instalada
-        ? '<p class="min tenue">Ya está abierta como aplicación: sin barra de navegador y con su icono en la pantalla de inicio.</p>'
-        : (D.pwa.instalable
-            ? '<p class="min tenue">Se puede poner en la pantalla de inicio y abrirla como cualquier otra aplicación, sin barra de navegador.</p>' +
-              '<button class="btn btn--sol" style="align-self:flex-start;margin-top:.7rem" data-a="instalar">' + ic("descargar") + "Instalar en este aparato</button>"
-            : '<p class="min tenue">En Android, el menú del navegador tiene <b>Instalar aplicación</b>. ' +
-              'En iPhone, el botón de compartir y luego <b>Añadir a pantalla de inicio</b>.</p>')) +
-      '<p class="nota-pie" style="margin-top:.6rem">' +
-        (D.pwa.sw === true
-          ? "Guardada para abrir sin internet."
-          : "Para que abra sin internet después de recargar hace falta el archivo <b>sw.js</b> en el servidor; sin él igual funciona, pero necesita una primera carga con red.") +
-      "</p>" +
-      '<div class="tarj__pie"><div style="min-width:0">' +
-        '<p class="min"><b>Versión</b> <span style="font-family:var(--mono)">v' + D.version + "</span></p>" +
-        '<p class="nota-pie">' + (D.pwa.nueva
-          ? "Hay una más nueva descargada y esperando."
-          : (D.pwa.sw === true
-              ? "Se revisa sola al abrir, al volver a la pantalla y cada media hora."
-              : "Sin sw.js en el servidor no se puede revisar sola.")) + "</p></div>" +
-      (D.pwa.nueva
-        ? '<button class="btn btn--sol" style="margin-left:auto" data-a="actualizar">' + ic("descargar") + "Actualizar ahora</button>"
-        : '<button class="btn btn--contorno" style="margin-left:auto" data-a="revisarVersion"' +
-          (D.pwa.buscando ? " disabled" : "") + ">" +
-          (D.pwa.buscando ? '<span class="girador"></span>' : ic("refrescar")) + "Buscar actualización</button>") +
-      "</div></div>" +
+  /* ── El logotipo ───────────────────────────────────────────────
+     Uno solo, y tiene que verse sobre blanco y sobre noche, porque
+     el sistema vive en los dos. Por eso la prueba enseña los dos. */
+  const cuerpoLogo = () => {
+    const claro = D.negocio.logo || LOGO;
+    const noche = D.negocio.logo || LOGO_OSCURO;
+    return '<div class="logo-prueba">' +
+        '<div class="logo-prueba__claro"><img src="' + claro + '" alt="Cómo se ve sobre claro"></div>' +
+        '<div class="logo-prueba__noche"><img src="' + noche + '" alt="Cómo se ve sobre noche"></div>' +
+      "</div>" +
+      '<p class="nota-pie">Va arriba a la izquierda y en la pantalla de entrada. ' +
+      "Lo mejor es un <b>PNG con el fondo transparente</b>, que se ve igual de bien de día y de noche. " +
+      "Se guarda achicado a la altura en la que se usa, para no llenar el aparato.</p>" +
+      '<div class="fila" style="gap:.5rem;flex-wrap:wrap">' +
+        '<label class="btn btn--sol" style="cursor:pointer">' + ic("imagen") + "Escoger imagen" +
+          '<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-a="logoArchivo" style="display:none">' +
+        "</label>" +
+        (D.negocio.logo
+          ? '<button class="btn btn--contorno" data-a="quitarLogo">' + ic("x") + "Volver al de HAYAI</button>"
+          : "") +
+      "</div>";
+  };
 
-      '<div class="tarj" data-tour="letra"><div class="tarj__cab">' + ic("documento","ambar") + "<h4>Tamaño de la letra</h4></div>" +
-      '<div class="col" style="gap:.5rem">' + letraOp + "</div>" +
-      '<p class="nota-pie" style="margin-top:.6rem">Vale igual en computadora, en tableta y en teléfono, y cambia al instante. ' +
-      "Se guarda en este aparato: otro puede tener el suyo en otro tamaño.</p></div>" +
+  /* ── El color ──────────────────────────────────────────────────
+     La muestra se pinta con la misma receta con la que se pintaría
+     el sistema entero, y en el modo que esté puesto: lo que se ve
+     en el círculo es lo que va a quedar. */
+  const cuerpoColor = () => {
+    const noche = temaEfectivo() === "dark";
+    return '<div class="paletas">' + PALETAS.map(p => {
+      const t = tonos(p.base, noche);
+      return '<button class="paleta" data-a="color" data-v="' + p.id + '" aria-pressed="' + (a.color === p.id) +
+        '" style="--paleta-sobre:' + p.sobre + '">' +
+        '<span class="paleta__m" style="background:' + t.sol + '"></span>' +
+        '<span class="paleta__n">' + p.n + '<br><span class="tenue" style="font-weight:400;font-size:.76rem">' +
+          p.d + "</span></span></button>";
+    }).join("") + "</div>" +
+    '<p class="nota-pie">Cambia el color de la marca: los botones de cobrar, lo que está escogido y los detalles. ' +
+    "El verde de cobrado y el rojo de anulado no se tocan, que esos dos significan algo. " +
+    "Queda guardado en este aparato.</p>";
+  };
 
-      '<div class="tarj"><div class="tarj__cab">' + ic("billete","ambar") + "<h4>Cobro en efectivo</h4></div>" +
-      '<label class="palanca"><input type="checkbox" data-a="efectivo"' + (a.efectivo ? " checked" : "") + ">Aceptar efectivo</label>" +
-      '<p class="nota-pie" style="margin-top:.5rem">' + (a.efectivo
-        ? "Efectivo en bolívares y en divisa aparecen como formas de pago en Venta y en Cobrar."
-        : "Apagado: las formas de pago en efectivo desaparecieron de todas las pantallas de cobro, no solo de una.") + "</p></div>" +
+  const cuerpoLetra = () =>
+    '<div class="col" style="gap:.5rem">' +
+      [["pequena","Pequeña","la que más cabe en pantalla"],
+       ["mediana","Mediana","la de siempre"],
+       ["grande","Grande","se lee de lejos, como en la tableta del mostrador"]].map(t =>
+        '<label class="marca-op"><input type="radio" name="letra" data-a="letra" data-v="' + t[0] + '"' +
+        (a.letra === t[0] ? " checked" : "") + "><span><b>" + t[1] + '</b> <span class="tenue">— ' + t[2] +
+        "</span></span></label>").join("") + "</div>" +
+    '<p class="nota-pie">Vale igual en computadora, en tableta y en teléfono, y cambia al instante. ' +
+    "Se guarda en este aparato: otro puede tener el suyo en otro tamaño.</p>";
 
+  const cuerpoInstalar = () =>
+    (D.pwa.instalada
+      ? '<p class="min tenue">Ya está abierta como aplicación: sin barra de navegador y con su icono en la pantalla de inicio.</p>'
+      : (D.pwa.instalable
+          ? '<p class="min tenue">Se puede poner en la pantalla de inicio y abrirla como cualquier otra aplicación, sin barra de navegador.</p>' +
+            '<button class="btn btn--sol" style="align-self:flex-start" data-a="instalar">' + ic("descargar") + "Instalar en este aparato</button>"
+          : '<p class="min tenue">En Android, el menú del navegador tiene <b>Instalar aplicación</b>. ' +
+            'En iPhone, el botón de compartir y luego <b>Añadir a pantalla de inicio</b>.</p>')) +
+    '<p class="nota-pie">' +
+      (D.pwa.sw === true
+        ? "Guardada para abrir sin internet."
+        : "Para que abra sin internet después de recargar hace falta el archivo <b>sw.js</b> en el servidor; sin él igual funciona, pero necesita una primera carga con red.") +
+    "</p>" +
+    '<div class="fila" style="gap:.5rem;flex-wrap:wrap"><div style="min-width:0">' +
+      '<p class="min"><b>Versión</b> <span style="font-family:var(--mono)">v' + D.version + "</span></p>" +
+      '<p class="nota-pie">' + (D.pwa.nueva
+        ? "Hay una más nueva descargada y esperando."
+        : (D.pwa.sw === true
+            ? "Se revisa sola al abrir, al volver a la pantalla y cada media hora."
+            : "Sin sw.js en el servidor no se puede revisar sola.")) + "</p></div>" +
+    (D.pwa.nueva
+      ? '<button class="btn btn--sol" style="margin-left:auto" data-a="actualizar">' + ic("descargar") + "Actualizar ahora</button>"
+      : '<button class="btn btn--contorno" style="margin-left:auto" data-a="revisarVersion"' +
+        (D.pwa.buscando ? " disabled" : "") + ">" +
+        (D.pwa.buscando ? '<span class="girador"></span>' : ic("refrescar")) + "Buscar actualización</button>") +
+    "</div>";
+
+  const cuerpoLimpiar = () =>
+    '<p class="min tenue">Lo del mostrador vive en este mismo aparato. Esto lo borra de aquí y no se puede deshacer.</p>' +
+    '<div class="fila" style="gap:.5rem;flex-wrap:wrap">' +
+      '<button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
+        ic("papelera") + "Borrar ventas, cierre y pedidos de prueba</button>" +
+      '<button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
+        ic("papelera") + "Empezar de cero</button></div>";
+
+  /* ── La lista ──────────────────────────────────────────────── */
+  return '<div class="aj">' +
+    grupoAjustes("El cobro", [
+      filaAjuste("tasa", "tasa", "Tasa predeterminada",
+        "Se lee en " + etiquetaTasa(a.tasaPref), cuerpoTasa),
+      filaAjuste("fuente", "refrescar", "De dónde sale la tasa",
+        (D.tasaEstado === "ok" ? "En vivo del BCV"
+          : (D.tasaEstado === "manual" ? "Escrita a mano"
+            : (D.tasaEstado === "cargando" ? "Buscándola" : "La fuente no contesta"))) +
+        " · " + tasaTexto("oficial") + " Bs", cuerpoFuente),
+      filaAjuste("moneda", "calculadora", "En qué moneda se lee",
+        a.moneda === "divisa" ? "La divisa va de primera" : "Los bolívares van de primeros", cuerpoMoneda),
+      filaAjuste("efectivo", "billete", "Cobro en efectivo",
+        a.efectivo ? "Se acepta" : "Apagado en todas las pantallas", cuerpoEfectivo),
+      soyDuena ? filaAjuste("tipos", "etiqueta", "Tipos de precio",
+        D.tiposPrecio.map(t => esc(t.nombre)).join(", "), cuerpoTipos) : ""
+    ]) +
+
+    grupoAjustes("Cómo se ve", [
+      filaAjuste("logo", "imagen", "Logotipo",
+        D.negocio.logo ? "El del negocio" : "El de HAYAI", cuerpoLogo),
+      filaAjuste("color", "paleta", "Color del sistema", paletaActual().n, cuerpoColor),
+      filaAjuste("letra", "documento", "Tamaño de la letra",
+        NOMBRE_LETRA[a.letra] || "Mediana", cuerpoLetra)
+    ]) +
+
+    grupoAjustes("El sistema", [
+      filaAjuste("instalar", "descargar", "Tenerla como aplicación",
+        (D.pwa.instalada ? "Instalada" : (D.pwa.instalable ? "Se puede instalar" : "Desde el menú del navegador")) +
+        " · v" + D.version, cuerpoInstalar),
       /* Limpiar datos solo la ve la cuenta de recuperación: para el
          mostrador estos botones no existen. */
-      (esRecuperacion()
-        ? '<div class="tarj"><div class="tarj__cab">' + ic("papelera","ambar") + "<h4>Limpiar datos</h4>" +
-          '<span class="chip chip--liso chip--xs chip--hueco">Solo recuperación</span></div>' +
-          '<p class="min tenue">Lo del mostrador vive en este mismo aparato. Esto lo borra de aquí y no se puede deshacer.</p>' +
-          '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
-            ic("papelera") + "Borrar ventas, cierre y pedidos de prueba</button>" +
-          '<button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
-            ic("papelera") + "Empezar de cero</button></div></div>"
-        : "") +
-    "</div></div>";
+      esRecuperacion() ? filaAjuste("limpiar", "papelera", "Limpiar datos",
+        "Solo la cuenta de recuperación", cuerpoLimpiar) : ""
+    ]) +
+  "</div>";
 }
 
 /* ── Usuarios ──────────────────────────────────────────────────── */
@@ -3357,6 +3589,8 @@ function ventActualizar(){
 
 /* ── Acerca del sistema ────────────────────────────────────────── */
 const CAMBIOS = [
+  { v:"1.0.5", f:"06/09/2026", t:"El negocio pone su propio logotipo, y el sistema se puede cambiar a verde, azul y seis colores más." },
+  { v:"1.0.5", f:"06/09/2026", t:"Ajustes es una lista como la del teléfono: se toca lo que se quiere cambiar y se abre solo eso." },
   { v:"1.0.5", f:"06/09/2026", t:"Ajustes se quedó con lo que de verdad se toca, y la letra tiene un solo tamaño para todos los aparatos." },
   { v:"1.0.5", f:"06/09/2026", t:"Todo queda guardado en el aparato: se cierra el navegador y al volver está donde quedó." },
   { v:"1.0.5", f:"06/09/2026", t:"Cada rol entra solo a sus pantallas, y la dueña reparte los permisos uno por uno." },
@@ -3777,6 +4011,7 @@ const VISTAS = { inicio:vistaInicio, venta:vistaVenta, pedidos:vistaPedidos, inv
 
 function render(){
   aplicarTema();
+  aplicarColor();
   aplicarLetra();
   const app = $("#app");
   if(!D.usuario){
@@ -3802,6 +4037,15 @@ function render(){
    Se oscurece la pantalla, se recorta lo que se está explicando
    y el globo lo cuenta al lado. Un paso a la vez.
    ═══════════════════════════════════════════════════════════════ */
+/* En Ajustes la guía habla de renglones que pueden estar cerrados:
+   se abre el que toca antes de pintar, y así el globo señala campos
+   de verdad y no una fila muda. */
+function abrirLoDelTour(){
+  if(D.pantalla !== "ajustes" || D.tour === null) return;
+  const paso = pasosTour()[D.tour];
+  if(paso && paso.q) D.ajusteAbierto = paso.q;
+}
+
 function pasosTour(){
   const p = PANTALLAS[D.pantalla];
   if(!p || !p.guia) return [];
@@ -3927,6 +4171,7 @@ function irA(p){
   D.pantalla = p;
   D.ventana = null;
   D.tour = null;
+  D.ajusteAbierto = null;
   if(p === "venta") D.foco = "q-venta";
   if(p === "pedidos") D.foco = null;
   render();
@@ -4046,8 +4291,8 @@ const ACCIONES = {
     irA(destino);
   },
   ventana(ds){ abrirVenta(ds.v, ds); },
-  tour(){ D.ventana = null; D.tour = 0; render(); },
-  tourIr(ds){ D.tour = Number(ds.v); render(); },
+  tour(){ D.ventana = null; D.tour = 0; abrirLoDelTour(); render(); },
+  tourIr(ds){ D.tour = Number(ds.v); abrirLoDelTour(); render(); },
   tourFin(){ D.tour = null; render(); },
   cerrarVentana(){ cerrarVentana(); },
   nada(){},
@@ -4419,6 +4664,86 @@ const ACCIONES = {
       el.checked ? "Vuelve a aparecer en todas las pantallas de cobro." : "Desapareció de Venta y de Cobrar, no solo de una.");
   },
   letra(ds){ D.ajustes.letra = ds.v; render(); },
+
+  /* Abrir un renglón cierra el que estuviera abierto: en la pantalla
+     no hay nunca más de una cosa destapada. */
+  abrirAjuste(ds){
+    D.ajusteAbierto = D.ajusteAbierto === ds.v ? null : ds.v;
+    render();
+    if(!D.ajusteAbierto) return;
+    const fila = document.querySelector('.aj-fila[data-v="' + D.ajusteAbierto + '"]');
+    /* Si lo que se abrió quedó pisando el borde de abajo, se sube solo:
+       si no, se abre algo que no se ve. */
+    if(fila && fila.getBoundingClientRect().bottom > window.innerHeight - 160){
+      try{ fila.scrollIntoView({ block:"start", behavior:"smooth" }); }
+      catch(_){ fila.scrollIntoView(); }
+    }
+  },
+
+  color(ds){
+    if(!PALETAS.some(x => x.id === ds.v)) return;
+    D.ajustes.color = ds.v;
+    render();
+    avisar("Ahora el sistema es " + paletaActual().n.toLowerCase(),
+      "Cambia el color de la marca. Lo cobrado, lo anulado y las cifras siguen igual.");
+  },
+
+  /* El logotipo se guarda achicado a la altura en que se usa: el
+     almacén del navegador es chico y una foto de teléfono no cabe. */
+  logoArchivo(ds, el){
+    const f = el.files && el.files[0];
+    if(!f) return;
+    el.value = "";                       // que escoger el mismo archivo vuelva a avisar
+    if(f.type.indexOf("image/") !== 0){
+      avisar("Eso no es una imagen", "Tiene que ser un PNG, un JPG, un WEBP o un SVG.", "mal");
+      return;
+    }
+    const lector = new FileReader();
+    lector.onerror = () => avisar("No se pudo leer el archivo", "Prueba con otro.", "mal");
+    lector.onload = () => {
+      const crudo = String(lector.result);
+      /* El SVG ya viene liviano y no se puede achicar en un lienzo sin
+         perderle el filo: ese se guarda tal cual, si es de un tamaño
+         razonable. */
+      if(f.type === "image/svg+xml"){
+        if(crudo.length > 300 * 1024){
+          avisar("El SVG es muy pesado", "Pasa de 300 KB. Guárdalo más simple o usa un PNG.", "mal");
+          return;
+        }
+        ponerLogo(crudo);
+        return;
+      }
+      const img = new Image();
+      img.onerror = () => avisar("No se pudo abrir la imagen", "El archivo puede estar dañado.", "mal");
+      img.onload = () => {
+        const ALTO = 128, ANCHO_TOPE = 512;
+        let h = Math.min(ALTO, img.naturalHeight || ALTO);
+        let w = Math.round((img.naturalWidth || 1) * (h / (img.naturalHeight || 1)));
+        if(w > ANCHO_TOPE){ w = ANCHO_TOPE; h = Math.round((img.naturalHeight || 1) * (w / (img.naturalWidth || 1))); }
+        const lienzo = document.createElement("canvas");
+        lienzo.width = Math.max(1, w); lienzo.height = Math.max(1, h);
+        lienzo.getContext("2d").drawImage(img, 0, 0, lienzo.width, lienzo.height);
+        let dato;
+        try{ dato = lienzo.toDataURL("image/png"); }
+        catch(_){ dato = crudo; }         // por si el lienzo quedó manchado
+        if(dato.length > 600 * 1024){
+          avisar("La imagen es muy pesada", "Aun achicada pasa de 600 KB. Usa un PNG más simple.", "mal");
+          return;
+        }
+        ponerLogo(dato);
+      };
+      img.src = crudo;
+    };
+    lector.readAsDataURL(f);
+  },
+
+  quitarLogo(){
+    if(!D.negocio.logo) return;
+    D.negocio.logo = null;
+    anotar("Volvió al logotipo de HAYAI");
+    render();
+    avisar("Logotipo quitado", "Vuelve el de HAYAI, el que trae el sistema.");
+  },
   tema(){
     D.ajustes.tema = temaEfectivo() === "dark" ? "light" : "dark";
     render();
@@ -4595,9 +4920,17 @@ const ACCION_MODULO = {
   rol:"usuarios", guardarUsuario:"usuarios", permiso:"usuarios",
 
   guardarTasas:"ajustes", tasaPref:"ajustes", efectivo:"ajustes", moneda:"ajustes",
+  color:"ajustes", logoArchivo:"ajustes", quitarLogo:"ajustes",
   confirmarLimpiarVentas:"ajustes",
   guardarTipoPrecio:"ajustes", borrarTipoPrecio:"ajustes"
 };
+
+function ponerLogo(dato){
+  D.negocio.logo = dato;
+  anotar("Cambió el logotipo del sistema");
+  render();
+  avisar("Logotipo cambiado", "Ya se ve arriba, en la entrada y en el ticket.");
+}
 
 function hacer(a, ds, el, e){
   const mod = ACCION_MODULO[a];
@@ -4639,7 +4972,8 @@ document.addEventListener("input", e => {
 document.addEventListener("change", e => {
   const el = e.target;
   if(!el.dataset || !el.dataset.a) return;
-  if(el.tagName === "SELECT" || el.type === "checkbox" || el.type === "radio") hacer(el.dataset.a, el.dataset, el, e);
+  if(el.tagName === "SELECT" || el.type === "checkbox" || el.type === "radio" || el.type === "file")
+    hacer(el.dataset.a, el.dataset, el, e);
 });
 $("#capa").addEventListener("mousedown", e => { if(e.target.id === "capa") cerrarVentana(); });
 
