@@ -1646,6 +1646,10 @@ function puedeEditar(mod){
   if(!D.usuario) return true;
   return permisoDe(D.usuario, mod) === "todo";
 }
+/* Solo quien entró con la cuenta de recuperación — nunca el dueño del
+   negocio, aunque sea "duena" — ve los botones que borran datos reales
+   a propósito (limpiar ventas de prueba, empezar de cero). */
+function esRecuperacion(){ return !!D.usuario && D.usuario.id === -1; }
 function cuentaPermisos(u){
   const ps = permisosDe(u);
   let ve = 0, cambia = 0;
@@ -2638,10 +2642,12 @@ function vistaAjustes(){
           ? '<span class="rojo">El navegador no acepta más datos (' + esc(D.guardadoFallo) + "). Exporta el día antes de seguir.</span>"
           : (D.guardado ? "Última vez, " + fechaHora(D.guardado) + "." : "Todavía no se ha guardado nada.")) +
       " Como vive aquí y no en la nube, otro aparato tiene sus propios datos, y borrar los del navegador se los lleva.</p>" +
-      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
-        ic("papelera") + "Borrar ventas, cierre y pedidos de prueba</button>" +
-      '<button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
-        ic("papelera") + "Empezar de cero</button></div></div>" +
+      (esRecuperacion()
+        ? '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
+            ic("papelera") + "Borrar ventas, cierre y pedidos de prueba</button>" +
+          '<button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
+            ic("papelera") + "Empezar de cero</button></div>"
+        : "") + "</div>" +
 
       '<div class="tarj"><div class="tarj__cab">' + ic("sinred","ambar") + "<h4>Conexión</h4></div>" +
       '<label class="palanca"><input type="checkbox" data-a="conexion"' + (D.enLinea ? "" : " checked") + ">Simular que se cayó el internet</label>" +
@@ -4467,6 +4473,7 @@ const ACCIONES = {
   },
   revisarVersion(){ buscarVersion(true); },
   confirmarCero(){
+    if(!esRecuperacion()) return;
     olvidarTodo();
     /* Se recarga en vez de rearmar el estado a mano: así no queda ni un
        resto de lo anterior colgando en memoria. */
@@ -4474,6 +4481,7 @@ const ACCIONES = {
     recargar();
   },
   confirmarLimpiarVentas(){
+    if(!esRecuperacion()) return;
     const nDocs = D.documentos.length, nPed = D.pedidos.length;
     D.documentos = [];
     D.pedidos = [];
