@@ -16,7 +16,7 @@
    Si no cambias VERSION, nadie se entera de que hay algo nuevo.
    ═══════════════════════════════════════════════════════════════ */
 
-const VERSION = "1.0.5";
+const VERSION = "1.0.6";
 const CACHE   = "hayai-mostrador-" + VERSION;
 
 /* Lo que hace falta para abrir. Añade aquí lo que sirvas aparte. */
@@ -64,6 +64,15 @@ self.addEventListener("fetch", e => {
   /* La tasa del BCV nunca se sirve de la caché: o llega fresca o no llega.
      El sistema ya sabe quedarse con la última conocida. */
   if(url.pathname.indexOf("/dolares") >= 0){
+    e.respondWith(fetch(req));
+    return;
+  }
+
+  /* La sincronización tampoco. Guardar una respuesta de /api sería
+     darle al mostrador datos de hace un rato creyendo que son de
+     ahora, y peor: contestarle "ya está guardado" sin que nada haya
+     salido del aparato. O va a la red, o no va. */
+  if(url.pathname.indexOf("/api/") >= 0){
     e.respondWith(fetch(req));
     return;
   }
