@@ -2254,6 +2254,9 @@ function detallePedido(p){
       '<button class="btn btn--fantasma btn--sm" style="margin-top:.5rem;width:100%" data-a="ventana" data-v="anularPedido" data-id="' + p.id + '">Anular el pedido</button>';
   else if(p.estado === "cobrado")
     acciones = '<button class="btn btn--sol btn--lg btn--bloque" data-a="entregar" data-id="' + p.id + '">Marcar como entregado</button>';
+  else if(p.estado === "anulado")
+    acciones = '<button class="btn btn--sol btn--lg btn--bloque" data-a="retomarPedido" data-id="' + p.id + '">Retomar el pedido</button>' +
+      '<button class="btn btn--fantasma btn--sm" style="margin-top:.5rem;width:100%" data-a="ventana" data-v="borrarPedido" data-id="' + p.id + '">Eliminar por completo</button>';
   else
     acciones = '<div class="aviso"><span class="aviso__ic">' + ic("info") + "</span><div><p class=\"aviso__d\">Este pedido quedó como <b>" +
       ESTADOS[p.estado].et.toLowerCase() + "</b>. No hay nada más que hacerle.</p></div></div>";
@@ -2744,6 +2747,7 @@ function ventanaHTML(){
   if(v === "atajos")         return ventAtajos();
   if(v === "nuevoProducto")  return ventNuevoProducto();
   if(v === "anularPedido")   return ventAnularPedido();
+  if(v === "borrarPedido")   return ventBorrarPedido();
   if(v === "anularDoc")      return ventAnularDoc();
   if(v === "cerrarCaja")     return ventCerrarCaja();
   if(v === "dejarPedido")    return ventDejarPedido();
@@ -3447,6 +3451,15 @@ function ventAnularPedido(){
     '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
     '<button class="btn btn--peligro" style="margin-left:auto" data-a="anularPedido" data-id="' + p.id + '">Anular el pedido</button></div></div>';
 }
+function ventBorrarPedido(){
+  const p = D.pedidos.find(x => x.id === Number(D.ventana.id));
+  return '<div class="vent vent--angosta">' + cab("¿Eliminar el pedido " + p.id + " por completo?", "") +
+    '<div class="vent__cuerpo">' +
+      '<div class="aviso aviso--sol"><span class="aviso__ic">' + ic("alerta") + "</span><div>" +
+      '<p class="aviso__d">Desaparece de Pedidos y de la bitácora no queda más que el registro de que se eliminó. No se puede deshacer.</p></div></div>' +
+    '</div><div class="vent__pie"><button class="btn btn--fantasma" data-a="cerrarVentana">Dejarlo así</button>' +
+    '<button class="btn btn--peligro" style="margin-left:auto" data-a="borrarPedido" data-id="' + p.id + '">Eliminar por completo</button></div></div>';
+}
 function ventAnularDoc(){
   const d = D.documentos.find(x => x.id === Number(D.ventana.id));
   return '<div class="vent vent--angosta">' + cab("¿Anular la venta " + String(d.id).padStart(5, "0") + "?", "") +
@@ -4134,6 +4147,23 @@ const ACCIONES = {
     D.ventana = null; render();
     avisar("Anulado · pedido " + p.id, "Las unidades apartadas volvieron a quedar libres.", "mal");
   },
+  retomarPedido(ds){
+    const p = D.pedidos.find(x => x.id === Number(ds.id));
+    p.estado = "por_cobrar";
+    recalcularComprometido();
+    anotar("Retomó el pedido " + p.id + " · vuelve a apartar las unidades");
+    render();
+    avisar("Pedido " + p.id + " retomado", "Vuelve a estar por cobrar y sus unidades quedaron apartadas de nuevo.");
+  },
+  borrarPedido(ds){
+    const p = D.pedidos.find(x => x.id === Number(ds.id));
+    if(!p) return;
+    D.pedidos = D.pedidos.filter(x => x.id !== p.id);
+    if(D.pedidoAbierto === p.id) D.pedidoAbierto = null;
+    anotar("Eliminó el pedido " + p.id + " por completo");
+    D.ventana = null; render();
+    avisar("Pedido eliminado", "El pedido " + p.id + " ya no existe.");
+  },
 
   /* Cobrar */
   cobroPago(ds){
@@ -4544,7 +4574,7 @@ const ACCION_MODULO = {
   cobroRecibe:"venta", cobroMonto:"venta",
 
   montar:"pedidos", editarPedido:"pedidos", cancelarMontar:"pedidos", dejarPedido:"pedidos", entregar:"pedidos",
-  anularPedido:"pedidos", bAgregar:"pedidos", bMenos:"pedidos", bCanal:"pedidos",
+  anularPedido:"pedidos", retomarPedido:"pedidos", borrarPedido:"pedidos", bAgregar:"pedidos", bMenos:"pedidos", bCanal:"pedidos",
   bAbonoRapido:"pedidos", limpiarBorrador:"pedidos", bDia:"pedidos", bFecha:"pedidos",
   bHora:"pedidos", bAbono:"pedidos", bNota:"pedidos", bCliente:"pedidos", bGuardar:"pedidos",
 
