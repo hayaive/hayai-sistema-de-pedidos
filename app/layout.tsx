@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import "./globals.css"
 
 /* Este cascarón de Next existe para una sola cosa: servir el mostrador.
@@ -10,6 +10,15 @@ export const metadata: Metadata = {
   title: "HAYAI Mostrador",
   description: "Punto de venta y encargos para la panadería.",
   icons: { icon: "/icono.png", apple: "/icono.png" },
+}
+
+/* La raíz redirige al mostrador, que trae la suya en su propio <head>.
+   Esta es la de esta página, para que el instante que se ve antes de
+   la redirección tampoco salga escalado en un teléfono. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 }
 
 export default function RootLayout({

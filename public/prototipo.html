@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HAYAI Mostrador</title>
 <meta name="application-name" content="HAYAI Mostrador">
 <meta name="theme-color" content="#FFFFFF" id="meta-tema">
@@ -1182,8 +1183,8 @@ function aNumero(v){
 const D = {
   /* Esta versión y la VERSION de sw.js van juntas: al publicar se cambian
      las dos. Eso es lo que hace que el mostrador ofrezca actualizarse. */
-  version: "1.0.5",
-  fechaVersion: "05/09/2026",
+  version: "1.0.6",
+  fechaVersion: "07/09/2026",
   /* logo: null = el de HAYAI. Si el negocio sube el suyo, aquí queda
      achicado y en base64, que es lo que cabe en el navegador. */
   negocio: { nombre:"Panadería y Pastelería", rif:"J-40123456-7", direccion:"Av. Bolívar, local 4",
@@ -1475,7 +1476,7 @@ function seRetiraHoy(){
 }
 
 function anotar(texto){
-  D.bitacora.unshift({ hora:new Date(), usuario: D.usuario ? D.usuario.nombre : "Sistema", texto });
+  D.bitacora.unshift({ id: idBitacora(), hora:new Date(), usuario: D.usuario ? D.usuario.nombre : "Sistema", texto });
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1565,6 +1566,9 @@ function guardarYa(){
   }
   D.guardadoFallo = "";
   D.guardado = new Date();
+  /* Guardado aquí; si además hay servidor, que salga pronto para
+     allá en vez de esperar al turno de los treinta segundos. */
+  sincronizarPronto();
   return true;
 }
 
@@ -1636,7 +1640,538 @@ function olvidarTodo(){
   noGuardarMas = true;
   if(tempoGuardar){ clearTimeout(tempoGuardar); tempoGuardar = null; }
   try{ localStorage.removeItem(LLAVE); }catch(_){ }
+  /* Y lo que este aparato creía que el servidor ya sabía. Es lo que
+     evita el desastre: sin esto, al volver vería que le faltan todos
+     los registros que tenía y los daría de baja allá también. Sin
+     marca, la próxima vez se presenta como aparato nuevo y se trae lo
+     que haya en la base. */
+  try{ localStorage.removeItem(LLAVE_SOMBRA); }catch(_){ }
+  S.sombra = {};
+  S.aparato.marca = null;
+  S.estado = "quieto";
+  guardarAparato();
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SINCRONIZAR
+
+   Lo de arriba no cambia: el mostrador escribe en este aparato y no
+   le pide permiso a nadie para cobrar. Se cae el internet y se sigue
+   vendiendo igual. Esto es lo que hace que lo de aquí llegue allá.
+
+   Cada cierto rato, si hay red, el aparato manda lo que cambió desde
+   la última vez y se trae lo que cambiaron los demás. Nada de esto
+   bloquea una venta: si falla, se reintenta más tarde y ya.
+
+   Cómo sabe qué cambió, sin tener que avisar en cada botón: guarda
+   aparte una huella de cada registro tal como quedó la última vez que
+   habló con el servidor. Lo que hoy no coincide con su huella, es lo
+   que hay que mandar. Lo que tiene huella y ya no está en el
+   mostrador, es lo que se borró.
+
+   Quién gana cuando dos tocaron lo mismo: el que editó de último. Lo
+   resuelve el servidor comparando la hora de edición, no la de
+   llegada.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── LA LLAVE ───────────────────────────────────────────────────
+   Tiene que ser exactamente la misma que la variable HAYAI_TOKEN en
+   el servidor. Mientras esté vacía, el mostrador trabaja como toda
+   la vida —solo en este aparato— y no intenta hablar con nadie: así
+   que se puede abrir este archivo sin haber montado nada todavía.
+
+   Y dicho claro, porque conviene saberlo: esta llave viaja dentro
+   del propio mostrador, o sea que quien pueda abrir la aplicación
+   puede leerla. Es el cerrojo de la puerta, no la identidad de cada
+   quien —eso lo siguen llevando los usuarios de aquí dentro—. Si se
+   filtra, se cambia en Vercel, se cambia aquí y se publica.
+   ─────────────────────────────────────────────────────────────── */
+const LLAVE_API = "";
+
+const LLAVE_APARATO = "hayai-aparato";
+const LLAVE_SOMBRA  = "hayai-sombra";
+
+/* Las listas que viajan. Lo que no está aquí es de este aparato y de
+   nadie más: la venta a medio cobrar, el pedido a medio montar, quién
+   está adentro, el tema y el tamaño de la letra. Mandar eso sería
+   moverle la pantalla a otro mientras trabaja. */
+const SINCRONIZABLES = ["usuarios", "tiposPrecio", "productos", "clientes", "pedidos", "documentos", "bitacora"];
+const SOLO_ALTA = { bitacora: true };   // la bitácora no se edita ni se borra
+const FECHAS = { pedidos:["retiro"], documentos:["hora"], bitacora:["hora"] };
+
+const CADA        = 30000;    // el ritmo de siempre, habiendo red
+const TRAS_CAMBIO = 4000;     // algo cambió: no se espera al turno
+const TOPE_ESPERA = 300000;   // si falla y falla, se espacia hasta 5 min
+
+const S = {
+  aparato: null,
+  sombra: {},
+  estado: "quieto",   // quieto · yendo · aldia · error · revisar · apagado
+  error: "",
+  ultima: null,
+  pendientes: 0,
+  corriendo: false,
+  tempo: null,
+  proximo: 0,
+  espera: CADA
+};
+
+/* ── El aparato y su serie ──────────────────────────────────────
+   Cada aparato numera lo que crea con su propia serie, y por eso dos
+   mostradores que estuvieron sin verse no inventan el mismo id para
+   clientes distintos. La serie se la propone él mismo al instalarse
+   —para poder trabajar desde el primer minuto, sin red— y el servidor
+   se la confirma o le da otra libre la primera vez que hablan.
+   ─────────────────────────────────────────────────────────────── */
+let BASE_ID = 0;
+
+function azar(){
+  try{ if(window.crypto && crypto.randomUUID) return crypto.randomUUID(); }catch(_){ }
+  return "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+
+function leerAparato(){
+  try{
+    const a = JSON.parse(localStorage.getItem(LLAVE_APARATO) || "null");
+    if(a && a.uuid && a.serie) return a;
+  }catch(_){ }
+  /* De 10 a 99: dos dígitos siempre, para que el número de ticket
+     salga del mismo ancho en todos los mostradores. */
+  return { uuid: azar(), serie: 10 + Math.floor(Math.random() * 90), confirmada: false, marca: null };
+}
+
+function guardarAparato(){
+  try{ localStorage.setItem(LLAVE_APARATO, JSON.stringify(S.aparato)); }catch(_){ }
+}
+
+S.aparato = leerAparato();
+BASE_ID = S.aparato.serie * 100000;
+guardarAparato();
+
+try{ S.sombra = JSON.parse(localStorage.getItem(LLAVE_SOMBRA) || "{}") || {}; }catch(_){ S.sombra = {}; }
+function guardarSombra(){
+  try{ localStorage.setItem(LLAVE_SOMBRA, JSON.stringify(S.sombra)); }catch(_){ }
+}
+
+/* El id de lo nuevo: la serie del aparato por delante. Con la serie
+   47, el cliente 101 de este mostrador es el 4700101 y no choca con
+   el 101 de ningún otro. */
+function nuevoId(clave){ return BASE_ID + (++D[clave]); }
+
+/* Cómo se lee un número de documento. Los de antes de las series se
+   siguen viendo como se veían; los nuevos salen «serie-número», que
+   es como se numera un talonario de toda la vida y además dice de
+   qué mostrador salió. */
+function numeroDoc(d){
+  const id = Number(d && d.id) || 0;
+  if(id >= 1000000){
+    return String(Math.floor(id / 100000)).padStart(2, "0") + "-" +
+           String(id % 100000).padStart(5, "0");
+  }
+  return String(id).padStart(5, "0");
+}
+
+/* La bitácora nunca tuvo id porque nunca hizo falta: se escribía y se
+   leía de corrido. Para viajar sí lo necesita. */
+let seqBitacora = 0;
+function idBitacora(){
+  return S.aparato.uuid.slice(0, 8) + "-" + Date.now().toString(36) + "-" + (++seqBitacora).toString(36);
+}
+function asegurarIds(){
+  D.bitacora.forEach(b => { if(!b.id) b.id = idBitacora(); });
+}
+
+/* ── La huella ──────────────────────────────────────────────────
+   Dos cuentas distintas sobre el mismo texto, más su largo. Con eso
+   alcanza de sobra para saber si un cliente cambió, y ocupa veinte
+   letras en vez de guardar el registro entero por duplicado.
+   ─────────────────────────────────────────────────────────────── */
+function firma(o){
+  const s = JSON.stringify(o);
+  let h = 5381, g = 0;
+  for(let i = 0; i < s.length; i++){
+    const c = s.charCodeAt(i);
+    h = ((h * 33) ^ c) >>> 0;
+    g = (g * 65599 + c) >>> 0;
+  }
+  return s.length.toString(36) + "." + h.toString(36) + "." + g.toString(36);
+}
+
+const soloFirma = v => String(v || "").split("|")[0];
+
+/* ── Qué hay que mandar ─────────────────────────────────────────
+   Lo que no coincide con su huella, y las bajas: lo que tenía huella
+   y ya no está.
+
+   El freno de mano: si de golpe faltara casi todo —alguien le dio a
+   «Empezar de cero», o el almacén del navegador se vació solo— eso
+   no es que hayan borrado ochenta clientes uno por uno, es un
+   accidente. Antes que replicar el accidente al resto de los
+   aparatos, la sincronización se detiene y lo dice.
+   ─────────────────────────────────────────────────────────────── */
+function delta(){
+  const cambios = {};
+  let n = 0, bajas = 0, tenia = 0;
+
+  SINCRONIZABLES.forEach(nombre => {
+    const sombra = S.sombra[nombre] || (S.sombra[nombre] = {});
+    const filas = [];
+    const hay = {};
+    const ahora = new Date().toISOString();
+
+    (D[nombre] || []).forEach(r => {
+      if(!r || r.id === undefined || r.id === null) return;
+      const id = String(r.id);
+      hay[id] = true;
+      const f = firma(r);
+      if(soloFirma(sombra[id]) !== f){
+        /* La huella se lleva puesta: entre que se calcula y que
+           contesta el servidor alguien pudo tocar el registro otra
+           vez, y esa segunda vuelta también tiene que viajar. */
+        filas.push({ id: r.id, datos: r, editado: ahora, borrado: false, _f: f });
+      }
+    });
+
+    if(!SOLO_ALTA[nombre]){
+      Object.keys(sombra).forEach(id => {
+        tenia++;
+        if(!hay[id]){ filas.push({ id, datos:{}, editado: ahora, borrado: true }); bajas++; }
+      });
+    }
+    if(filas.length){ cambios[nombre] = filas; n += filas.length; }
+  });
+
+  const freno = bajas > 20 && bajas > tenia * 0.4;
+  return { cambios, n, bajas, freno };
+}
+
+/* Lo que se mandó, queda sellado con su huella: no se vuelve a
+   mandar hasta que alguien lo toque de nuevo. */
+function sellar(cambios){
+  const marca = "|" + Date.now().toString(36);
+  Object.keys(cambios).forEach(nombre => {
+    const sombra = S.sombra[nombre] || (S.sombra[nombre] = {});
+    cambios[nombre].forEach(f => {
+      const id = String(f.id);
+      if(f.borrado) delete sombra[id];
+      else sombra[id] = (f._f || firma(f.datos)) + marca;
+    });
+  });
+}
+
+/* ── Lo que llega ───────────────────────────────────────────────
+   Las fechas vuelven a ser fechas —viajan como texto— y cada lista
+   se reordena como la espera la pantalla: lo último, arriba.
+   ─────────────────────────────────────────────────────────────── */
+function revivir(nombre, datos){
+  const r = Object.assign({}, datos);
+  (FECHAS[nombre] || []).forEach(k => { r[k] = aFecha(r[k]); });
+  return r;
+}
+
+const enMs = d => (d && d.getTime ? d.getTime() : 0);
+
+function ordenar(nombre, lista){
+  if(nombre === "documentos") return lista.sort((a, b) => enMs(b.hora) - enMs(a.hora));
+  if(nombre === "bitacora")   return lista.sort((a, b) => enMs(b.hora) - enMs(a.hora)).slice(0, TOPE_BITACORA);
+  if(nombre === "pedidos")    return lista.sort((a, b) => Number(b.id) - Number(a.id));
+  return lista;
+}
+
+function aplicar(cambios){
+  let tocado = false;
+
+  SINCRONIZABLES.forEach(nombre => {
+    const filas = cambios[nombre];
+    if(!Array.isArray(filas) || !filas.length) return;
+
+    const lista = D[nombre] || (D[nombre] = []);
+    const sombra = S.sombra[nombre] || (S.sombra[nombre] = {});
+    const donde = {};
+    lista.forEach((r, i) => { if(r && r.id !== undefined) donde[String(r.id)] = i; });
+    const marca = "|" + Date.now().toString(36);
+
+    filas.forEach(f => {
+      const id = String(f.id);
+      if(f.borrado){
+        if(donde[id] !== undefined){ lista[donde[id]] = null; tocado = true; }
+        delete sombra[id];
+        return;
+      }
+      const r = revivir(nombre, f.datos);
+      if(donde[id] !== undefined) lista[donde[id]] = r;
+      else { lista.push(r); donde[id] = lista.length - 1; }
+      sombra[id] = firma(r) + marca;
+      tocado = true;
+    });
+
+    D[nombre] = ordenar(nombre, lista.filter(Boolean));
+  });
+
+  /* Quien está dentro tiene su ficha de usuario en la mano, y aplicar
+     un cambio reemplaza el objeto de la lista por uno nuevo. Si no se
+     le devuelve el nuevo, sigue trabajando con los permisos de antes:
+     la dueña le cierra una pantalla desde el otro mostrador y aquí no
+     se entera. Si lo que pasó es que lo borraron, se le deja el suyo:
+     echarlo a mitad de una venta sería peor. */
+  if(D.usuario){
+    const yo = D.usuarios.find(u => u && u.id === D.usuario.id);
+    if(yo) D.usuario = yo;
+  }
+
+  /* La bitácora se poda a las 400 más recientes, aquí igual que
+     siempre. Lo podado no se borra en el servidor —allá la bitácora
+     entera se conserva, que para eso hay una base— así que su huella
+     se retira sin más. */
+  const sb = S.sombra.bitacora;
+  if(sb){
+    const vivas = {};
+    D.bitacora.forEach(b => { if(b && b.id) vivas[String(b.id)] = true; });
+    Object.keys(sb).forEach(id => { if(!vivas[id]) delete sb[id]; });
+  }
+  return tocado;
+}
+
+/* Lo que no es lista: los datos del negocio y las tasas. Van por su
+   cuenta porque no tienen id ni son varios. El estado de la tasa
+   («buscándola», «la fuente no contesta») se queda en casa: es de
+   este aparato y de su internet, no del negocio. */
+function bolsaConfig(){
+  return {
+    negocio: D.negocio,
+    tasas: { tasas: D.tasas, tasaFecha: D.tasaFecha, euroAMano: D.euroAMano, euroCalculado: D.euroCalculado }
+  };
+}
+
+function configDelta(){
+  const fuera = {};
+  const guarda = S.sombra.__config || (S.sombra.__config = {});
+  const bolsa = bolsaConfig();
+  const ahora = new Date().toISOString();
+  Object.keys(bolsa).forEach(k => {
+    const f = firma(bolsa[k]);
+    if(guarda[k] !== f) fuera[k] = { datos: bolsa[k], editado: ahora, _f: f };
+  });
+  return fuera;
+}
+
+function sellarConfig(fuera){
+  const guarda = S.sombra.__config || (S.sombra.__config = {});
+  Object.keys(fuera).forEach(k => { guarda[k] = fuera[k]._f; });
+}
+
+function aplicarConfig(cfg){
+  let tocado = false;
+  if(cfg.negocio && cfg.negocio.datos){
+    D.negocio = Object.assign({ logo:null }, cfg.negocio.datos);
+    tocado = true;
+  }
+  if(cfg.tasas && cfg.tasas.datos){
+    const t = cfg.tasas.datos;
+    if(t.tasas) D.tasas = Object.assign({}, D.tasas, t.tasas);
+    if(t.tasaFecha) D.tasaFecha = aFecha(t.tasaFecha);
+    D.euroAMano = !!t.euroAMano;
+    D.euroCalculado = !!t.euroCalculado;
+    tocado = true;
+  }
+  if(tocado){
+    const guarda = S.sombra.__config || (S.sombra.__config = {});
+    const bolsa = bolsaConfig();
+    Object.keys(bolsa).forEach(k => { guarda[k] = firma(bolsa[k]); });
+  }
+  return tocado;
+}
+
+/* ── Hablar con el servidor ─────────────────────────────────────── */
+function pedir(ruta, cuerpo){
+  return fetch(ruta, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-hayai-token": LLAVE_API },
+    body: JSON.stringify(cuerpo)
+  }).then(r => r.json().catch(() => ({})).then(j => {
+    if(!r.ok || !j.ok) throw new Error((j && j.error) || ("el servidor contestó " + r.status));
+    return j;
+  }));
+}
+
+function registrarAparato(){
+  return pedir("./api/aparato", {
+    uuid: S.aparato.uuid,
+    serie: S.aparato.serie,
+    nombre: (navigator.userAgent || "").slice(0, 60)
+  }).then(j => {
+    /* Si la serie que traía ya la tenía otro, el servidor le da otra.
+       Lo que haya numerado antes conserva la suya y sigue siendo
+       suyo: por eso las bajas no se tocan aquí. */
+    if(j.serie && j.serie !== S.aparato.serie){
+      S.aparato.serie = j.serie;
+      BASE_ID = j.serie * 100000;
+    }
+    S.aparato.confirmada = true;
+    guardarAparato();
+  });
+}
+
+function sincronizar(aMano){
+  if(!LLAVE_API){ S.estado = "apagado"; return Promise.resolve(); }
+  if(S.corriendo) return Promise.resolve();
+  if(S.estado === "revisar" && !aMano) return Promise.resolve();
+  if(!D.enLinea && !aMano){ programar(CADA); return Promise.resolve(); }
+
+  S.corriendo = true;
+  S.estado = "yendo";
+  pintarSync();
+
+  const listo = S.aparato.confirmada ? Promise.resolve() : registrarAparato();
+
+  return listo.then(() => {
+    /* El primer contacto no manda nada: primero se mira qué hay del
+       otro lado. Si la base está estrenándose, en la vuelta siguiente
+       se le sube todo lo de aquí como semilla; si ya tiene datos, se
+       adoptan y lo de aquí que no esté allá sube después. Al revés
+       —empujando a ciegas— un aparato recién instalado le pisaría al
+       resto el catálogo con sus datos de ejemplo. */
+    const primera = !S.aparato.marca;
+    const d = primera ? { cambios:{}, n:0, bajas:0, freno:false } : delta();
+    const cfg = primera ? {} : configDelta();
+
+    if(d.freno && !S.forzar){
+      S.estado = "revisar";
+      S.error = "Faltan " + d.bajas + " registros que este aparato sí tenía.";
+      throw new Error(S.error);
+    }
+    S.forzar = false;
+
+    S.pendientes = d.n;
+    return pedir("./api/sync", {
+      aparato: S.aparato.uuid,
+      desde: S.aparato.marca,
+      cambios: d.cambios,
+      config: cfg
+    }).then(j => {
+      sellar(d.cambios);
+      sellarConfig(cfg);
+      const hubo = aplicar(j.cambios || {});
+      const huboCfg = aplicarConfig(j.config || {});
+
+      S.aparato.marca = j.ahora;
+      guardarAparato();
+      guardarSombra();
+
+      S.estado = "aldia";
+      S.error = "";
+      S.ultima = new Date();
+      S.pendientes = 0;
+      S.espera = CADA;
+
+      if(hubo || huboCfg){
+        recalcularComprometido();
+        guardarYa();
+        pintarSync();
+      }
+      /* Base recién estrenada: la vuelta que viene sube lo de aquí. */
+      if(j.vacia) programar(1200);
+    });
+  }).catch(e => {
+    if(S.estado !== "revisar"){
+      S.estado = "error";
+      S.error = (e && e.message) || "no se pudo";
+      S.espera = Math.min(S.espera * 2, TOPE_ESPERA);
+    }
+  }).then(() => {
+    S.corriendo = false;
+    if(S.estado !== "revisar") programar(S.espera);
+    pintarSync();
+  });
+}
+
+function programar(ms){
+  if(S.tempo) clearTimeout(S.tempo);
+  S.proximo = Date.now() + ms;
+  S.tempo = setTimeout(() => { S.tempo = null; sincronizar(false); }, ms);
+}
+
+/* Algo cambió: no hay que esperar al turno completo. Pero esto se
+   llama después de cada pintada de pantalla, y la mayoría de las
+   pintadas no cambian ningún dato —abrir una ventana, el reloj de la
+   banda—. Así que antes de adelantar nada se mira si hay algo que
+   mandar de verdad, y se mira con cuentagotas: mirarlo cuesta unos
+   milisegundos y no hace falta hacerlo tres veces por segundo. */
+let ultimoVistazo = 0;
+function sincronizarPronto(){
+  if(!LLAVE_API || !D.enLinea || S.corriendo || S.estado === "revisar") return;
+  if(S.proximo && S.proximo - Date.now() <= TRAS_CAMBIO) return;
+  const t = Date.now();
+  if(t - ultimoVistazo < 3000) return;
+  ultimoVistazo = t;
+  if(delta().n > 0) programar(TRAS_CAMBIO);
+}
+
+/* Se repinta solo si no estorba: ni encima de una ventana abierta, ni
+   mientras alguien escribe. */
+function pintarSync(){
+  if(!D.usuario || D.ventana) return;
+  const a = document.activeElement;
+  if(a && a.matches && a.matches("input, textarea, select")) return;
+  render();
+}
+
+function textoSync(){
+  if(!LLAVE_API) return "Solo en este aparato";
+  if(S.estado === "yendo")   return "Sincronizando";
+  if(S.estado === "revisar") return "Detenida";
+  if(S.estado === "error")   return "Sin conectar";
+  if(S.estado === "aldia")   return "Al día" + (S.ultima ? " · " + hora(S.ultima) : "");
+  return D.enLinea ? "Por sincronizar" : "Sin internet";
+}
+
+/* En la banda de abajo, al lado de «En línea»: de un vistazo, si lo
+   de este mostrador ya está del otro lado. */
+function chipSync(){
+  if(!LLAVE_API) return "";
+  if(S.estado === "yendo")
+    return '<span class="chip chip--xs"><span class="girador"></span> Sincronizando</span>';
+  if(S.estado === "aldia")
+    return '<span class="chip chip--verde chip--xs" title="Última vez a las ' +
+      (S.ultima ? hora(S.ultima) : "") + '">Al día</span>';
+  if(S.estado === "revisar")
+    return '<span class="chip chip--sol chip--xs" title="' + esc(S.error) + '">Sincronización detenida</span>';
+  if(S.estado === "error")
+    return '<span class="chip chip--sol chip--xs" title="' + esc(S.error) + '">Sin sincronizar</span>';
+  return '<span class="chip chip--xs">Por sincronizar</span>';
+}
+
+/* ── Levantar el freno ──────────────────────────────────────────
+   Cuando la sincronización se detiene sola es porque a este aparato
+   le falta casi todo lo que tenía. Hay dos salidas y no valen lo
+   mismo:
+
+   Traerlo de nuevo — se olvida lo que este aparato creía saber y se
+   baja lo que haya en la base. Es la buena casi siempre: si aquí se
+   borró todo, lo que se quiere es recuperarlo, no propagarlo.
+
+   Mandarlo igual — las bajas salen para el servidor y desaparecen
+   para todos. Solo si de verdad se borraron a mano y a conciencia.
+   ─────────────────────────────────────────────────────────────── */
+function syncRehacer(){
+  S.sombra = {};
+  guardarSombra();
+  S.aparato.marca = null;
+  guardarAparato();
+  S.estado = "quieto";
+  S.error = "";
+  S.espera = CADA;
+  return sincronizar(true);
+}
+
+function syncForzar(){
+  S.forzar = true;
+  S.estado = "quieto";
+  S.error = "";
+  S.espera = CADA;
+  return sincronizar(true);
+}
+
 
 /* ── Notificaciones ────────────────────────────────────────────── */
 function avisar(titulo, detalle, tono){
@@ -2136,7 +2671,7 @@ function banda(){
     '<button data-a="recargarTasa" title="Volver a traer la tasa del BCV" aria-label="Volver a traer la tasa">' + ic("refrescar","ic--sm") + "</button>" +
     '<span class="div"></span>' +
     "<span>" + ic("caja-abierta","ic--sm") + " Caja abierta desde las <b>7:00 a.m.</b></span>" +
-    '<span class="banda-luz__fin">' + conexion + "<b>" + hora(new Date()) + "</b></span></div>";
+    '<span class="banda-luz__fin">' + chipSync() + conexion + "<b>" + hora(new Date()) + "</b></span></div>";
 }
 
 /* ── La versión nueva se anuncia arriba, esté donde esté ───────── */
@@ -2323,7 +2858,7 @@ function ticketHTML(d){
   return '<div class="ticket">' +
     '<div class="ticket__c"><span class="ticket__marca">' + esc(D.negocio.nombre) + "</span></div>" +
     '<div class="ticket__c">' + esc(D.negocio.rif) + "<br>" + esc(D.negocio.direccion) + "</div><hr>" +
-    "<div>TICKET " + String(d.id).padStart(5, "0") + "<br>" +
+    "<div>TICKET " + numeroDoc(d) + "<br>" +
       fechaHora(d.hora) + "<br>" +
       "Cajero: " + esc((D.usuario ? D.usuario.nombre : "").split(" ")[0]) + "<br>" +
       "Cliente: " + esc(d.cliente) + "</div><hr>" +
@@ -2571,7 +3106,7 @@ function vistaFacturacion(){
   const tabla = '<div class="tabla-env"><table class="tabla tabla--densa"><thead><tr>' +
     "<th>Ticket</th><th>Hora</th><th>Cliente</th><th>Pago</th><th class=\"num\">Total Bs</th><th>Estado</th></tr></thead><tbody>" +
     docs.map(d => '<tr class="pulsable' + (d.id === D.docAbierto ? " es-sel" : "") + '" data-a="verDoc" data-id="' + d.id + '">' +
-      '<td class="cifra cifra--sm">' + String(d.id).padStart(5, "0") + "</td>" +
+      '<td class="cifra cifra--sm">' + numeroDoc(d) + "</td>" +
       '<td class="min tenue">' + hora(d.hora) + "</td>" +
       '<td><span class="recorte">' + esc(d.cliente) + "</span></td>" +
       '<td class="min tenue">' + esc(d.pago) + "</td>" +
@@ -2829,6 +3364,41 @@ function vistaAjustes(){
         (D.pwa.buscando ? '<span class="girador"></span>' : ic("refrescar")) + "Buscar actualización</button>") +
     "</div>";
 
+  const cuerpoSync = () => {
+    if(!LLAVE_API)
+      return '<p class="min tenue">No hay servidor puesto: lo del mostrador vive en este aparato y no sale de aquí. ' +
+        'Para conectarlo hay que escribir la llave del servidor en <b>LLAVE_API</b>, dentro de prototipo.html, ' +
+        'y que sea la misma que <b>HAYAI_TOKEN</b> del otro lado.</p>';
+
+    const serie = String(S.aparato.serie).padStart(2, "0");
+    return '<p class="min tenue">Cada aparato manda lo suyo y se trae lo de los demás cada medio minuto, ' +
+      'y también en cuanto algo cambia. Sin internet se sigue vendiendo igual: lo de estas horas sale solo ' +
+      'cuando la red vuelve.</p>' +
+      '<div class="fila" style="gap:.5rem;flex-wrap:wrap;align-items:flex-start"><div style="min-width:0">' +
+        '<p class="min"><b>Estado</b> ' + esc(textoSync()) + "</p>" +
+        '<p class="nota-pie">Lo que se crea aquí se numera con la serie ' +
+          '<span style="font-family:var(--mono)">' + serie + "</span>" +
+          (S.aparato.confirmada ? "" : ", que el servidor todavía no confirma") + ". " +
+          (S.pendientes ? "Hay " + plural(S.pendientes, "cambio", "cambios") + " esperando."
+                        : "No hay nada esperando.") + "</p>" +
+        (S.error && S.estado !== "revisar"
+          ? '<p class="nota-pie" style="color:var(--rojo)">' + esc(S.error) + "</p>" : "") +
+      "</div>" +
+      '<button class="btn btn--contorno" style="margin-left:auto" data-a="syncAhora"' +
+        (S.corriendo ? " disabled" : "") + ">" +
+        (S.corriendo ? '<span class="girador"></span>' : ic("refrescar")) + "Sincronizar ahora</button></div>" +
+      (S.estado === "revisar"
+        ? '<div style="margin-top:.9rem;padding:.85rem;border:1px solid var(--rojo-linea);border-radius:var(--r2)">' +
+            '<p class="min"><b>La sincronización se detuvo sola.</b></p>' +
+            '<p class="nota-pie">' + esc(S.error) + " Antes de que esa falta se lleve por delante lo de los demás " +
+              "aparatos, hace falta decir qué pasó.</p>" +
+            '<div class="fila" style="gap:.5rem;flex-wrap:wrap;margin-top:.7rem">' +
+              '<button class="btn btn--sol" data-a="syncTraer">Traer lo que hay en el servidor</button>' +
+              '<button class="btn btn--contorno" data-a="syncMandar">Se borraron a propósito: mandarlo</button>' +
+            "</div></div>"
+        : "");
+  };
+
   const cuerpoLimpiar = () =>
     '<p class="min tenue">Lo del mostrador vive en este mismo aparato. Esto lo borra de aquí y no se puede deshacer.</p>' +
     '<div class="fila" style="gap:.5rem;flex-wrap:wrap">' +
@@ -2867,6 +3437,7 @@ function vistaAjustes(){
       filaAjuste("instalar", "descargar", "Tenerla como aplicación",
         (D.pwa.instalada ? "Instalada" : (D.pwa.instalable ? "Se puede instalar" : "Desde el menú del navegador")) +
         " · v" + D.version, cuerpoInstalar),
+      filaAjuste("sync", "refrescar", "Sincronización", textoSync(), cuerpoSync),
       /* Limpiar datos solo la ve la cuenta de recuperación: para el
          mostrador estos botones no existen. */
       esRecuperacion() ? filaAjuste("limpiar", "papelera", "Limpiar datos",
@@ -3261,7 +3832,7 @@ function ventCobrar(){
 function ventTicket(){
   const d = D.documentos.find(x => x.id === Number(D.ventana.id));
   const otra = D.ventana.otra;
-  return '<div class="vent vent--angosta">' + cab("Ticket " + String(d.id).padStart(5, "0"), "Así sale de la tiquera de 55 mm") +
+  return '<div class="vent vent--angosta">' + cab("Ticket " + numeroDoc(d), "Así sale de la tiquera de 55 mm") +
     '<div class="vent__cuerpo" style="align-items:center">' + ticketHTML(d) + "</div>" +
     '<div class="vent__pie"><button class="btn btn--contorno" data-a="imprimir">' + ic("imprimir") + "Imprimir</button>" +
     (otra ? '<button class="btn btn--contorno" style="margin-left:auto" data-a="otraVenta">Otra venta</button>' +
@@ -3601,6 +4172,7 @@ const CAMBIOS = [
   { v:"1.0.5", f:"06/09/2026", t:"El negocio pone su propio logotipo, y el sistema se puede cambiar a verde, azul y seis colores más." },
   { v:"1.0.5", f:"06/09/2026", t:"Ajustes es una lista como la del teléfono: se toca lo que se quiere cambiar y se abre solo eso." },
   { v:"1.0.5", f:"06/09/2026", t:"Ajustes se quedó con lo que de verdad se toca, y la letra tiene un solo tamaño para todos los aparatos." },
+  { v:"1.0.6", f:"07/09/2026", t:"Lo del mostrador ya no vive en un solo aparato: hay base de datos y los aparatos se ponen de acuerdo solos cada medio minuto. Y en teléfono se ve como en teléfono." },
   { v:"1.0.5", f:"06/09/2026", t:"Todo queda guardado en el aparato: se cierra el navegador y al volver está donde quedó." },
   { v:"1.0.5", f:"06/09/2026", t:"Cada rol entra solo a sus pantallas, y la dueña reparte los permisos uno por uno." },
   { v:"1.0.5", f:"06/09/2026", t:"La entrada ya no dice con qué usuario probar: quien entra, sabe lo suyo." },
@@ -3708,7 +4280,7 @@ function ventBorrarPedido(){
 }
 function ventAnularDoc(){
   const d = D.documentos.find(x => x.id === Number(D.ventana.id));
-  return '<div class="vent vent--angosta">' + cab("¿Anular la venta " + String(d.id).padStart(5, "0") + "?", "") +
+  return '<div class="vent vent--angosta">' + cab("¿Anular la venta " + numeroDoc(d) + "?", "") +
     '<div class="vent__cuerpo">' +
       '<p class="min tenue">Se cobraron <b>' + bs(d.total) + "</b> con tasa " + num(d.tasa) + ".</p>" +
       '<div class="aviso"><span class="aviso__ic">' + ic("info") + "</span><div>" +
@@ -4225,7 +4797,7 @@ function bAgregar(id){
 }
 
 function nuevoDocumento(cliente, pago, lineas, total, pedidoId, pagos){
-  const d = { id: ++D.seqDoc, hora:new Date(), cliente, pago, lineas, total,
+  const d = { id: nuevoId("seqDoc"), hora:new Date(), cliente, pago, lineas, total,
               tasa: D.tasas.oficial, tasaTipo:"oficial", anulado:false, pedidoId: pedidoId || null,
               pagos: pagos || null };
   D.documentos.unshift(d);
@@ -4353,7 +4925,7 @@ const ACCIONES = {
     const pagoTexto = pagosDetalle.map(p => p.nombre).join(" + ");
     descontar(lineas);
     const d = nuevoDocumento("Contado", pagoTexto, lineas, total, null, pagosDetalle);
-    anotar("Venta de mostrador " + String(d.id).padStart(5, "0") + " · " + bs(total));
+    anotar("Venta de mostrador " + numeroDoc(d) + " · " + bs(total));
     D.venta = []; D.ventaPagos = []; D.ventaPanelAbierto = false;
     D.ventana = { v:"ticket", id:d.id, otra:true };
     render();
@@ -4367,7 +4939,7 @@ const ACCIONES = {
     const cant = Number($("#np-cant").value) || 0;
     const categoria = ($("#np-categoria").value || "").trim() || "Sin categoría";
     if(!nombre){ avisar("Falta el nombre", "Escribe cómo se llama para poder crearlo.", "mal"); return; }
-    const p = { id: ++D.seqProd, nombre, descripcion:"", categoria, subcategoria:"",
+    const p = { id: nuevoId("seqProd"), nombre, descripcion:"", categoria, subcategoria:"",
                 precios: { [D.tiposPrecio[0].id]: precioUsd },
                 disponible: cant, comprometido:0, minimo:0, vendidas:0, activo:true };
     D.productos.push(p);
@@ -4529,7 +5101,7 @@ const ACCIONES = {
       Object.assign(c, datos);
       anotar("Actualizó el cliente " + c.nombre);
     } else {
-      c = Object.assign({ id: ++D.seqCliente }, datos);
+      c = Object.assign({ id: nuevoId("seqCliente") }, datos);
       if(!c.nombre) c.nombre = c.telefono || c.cedula;
       D.clientes.push(c);
       anotar("Registró al cliente " + c.nombre);
@@ -4565,7 +5137,7 @@ const ACCIONES = {
       Object.assign(p, { nombre, descripcion, categoria, subcategoria, precios, precioFijoBs, activo });
       anotar((activo === eraActivo ? "Editó" : (activo ? "Reactivó" : "Inactivó")) + " el producto " + p.nombre);
     } else {
-      p = { id: ++D.seqProd, codigo:"", nombre, descripcion, categoria, subcategoria, precios, precioFijoBs,
+      p = { id: nuevoId("seqProd"), codigo:"", nombre, descripcion, categoria, subcategoria, precios, precioFijoBs,
             disponible:0, comprometido:0, minimo:0, vendidas:0, activo:true };
       D.productos.push(p);
       anotar("Creó el producto " + p.nombre);
@@ -4603,7 +5175,7 @@ const ACCIONES = {
       D.tiposPrecio.find(x => x.id === Number(ds.id)).nombre = nombre;
       anotar("Renombró el tipo de precio a " + nombre);
     } else {
-      D.tiposPrecio.push({ id: ++D.seqTipoPrecio, nombre });
+      D.tiposPrecio.push({ id: nuevoId("seqTipoPrecio"), nombre });
       anotar("Creó el tipo de precio " + nombre);
     }
     D.ventana = null; render();
@@ -4626,9 +5198,9 @@ const ACCIONES = {
   anularDoc(ds){
     const d = D.documentos.find(x => x.id === Number(ds.id));
     d.anulado = true;
-    anotar("Venta borrada " + String(d.id).padStart(5, "0") + " · " + bs(d.total));
+    anotar("Venta borrada " + numeroDoc(d) + " · " + bs(d.total));
     D.ventana = null; render();
-    avisar("Venta borrada · " + String(d.id).padStart(5, "0"), "Deja de sumar en el cierre. El monto y la tasa se conservan.", "mal");
+    avisar("Venta borrada · " + numeroDoc(d), "Deja de sumar en el cierre. El monto y la tasa se conservan.", "mal");
   },
   imprimir(){ imprimirTicket(); },
 
@@ -4640,6 +5212,11 @@ const ACCIONES = {
     D.ventana = null; render();
     avisar("Caja cerrada · " + bs(vendidoHoy()), plural(porCobrar().length, "pedido sigue", "pedidos siguen") + " pendientes para mañana.");
   },
+
+  /* Sincronización */
+  syncAhora(){ sincronizar(true); },
+  syncTraer(){ syncRehacer(); },
+  syncMandar(){ syncForzar(); },
 
   /* Tasas */
   recargarTasa(){ cargarTasaBCV(true); },
@@ -4887,7 +5464,7 @@ const ACCIONES = {
       return;
     }
 
-    const p = { id: ++D.seqPedido, clienteId:b.clienteId, lineas,
+    const p = { id: nuevoId("seqPedido"), clienteId:b.clienteId, lineas,
       abonado, estado:"por_cobrar", retiro: fechaRetiro(),
       canal: b.canal, nota: b.nota, tasa: D.tasas.oficial, tasaTipo:"oficial" };
     D.pedidos.unshift(p);
@@ -4931,7 +5508,8 @@ const ACCION_MODULO = {
   guardarTasas:"ajustes", tasaPref:"ajustes", efectivo:"ajustes", moneda:"ajustes",
   color:"ajustes", logoArchivo:"ajustes", quitarLogo:"ajustes",
   confirmarLimpiarVentas:"ajustes",
-  guardarTipoPrecio:"ajustes", borrarTipoPrecio:"ajustes"
+  guardarTipoPrecio:"ajustes", borrarTipoPrecio:"ajustes",
+  syncTraer:"ajustes", syncMandar:"ajustes"
 };
 
 function ponerLogo(dato){
@@ -5063,9 +5641,15 @@ fijarIdioma();
    solo se siembran la primera vez, o cuando alguien decide empezar de
    cero desde Ajustes. */
 if(!cargar()) sembrar();
+/* La bitácora de antes no traía id porque no le hacía falta; para
+   viajar al servidor sí. Se lo ponemos aquí, una sola vez. */
+asegurarIds();
 prepararPWA();
 render();
 cargarTasaBCV(false);
+/* La primera sincronización, un momento después de pintar: primero
+   que se vea el mostrador, que es a lo que se viene. */
+if(LLAVE_API) programar(1500);
 /* Se le da un momento al navegador para que diga si la puede instalar,
    y ahí mismo se abre la puerta: instalarla, o saltar a la instalada. */
 setTimeout(abrirPuerta, 900);
@@ -5073,7 +5657,12 @@ setTimeout(abrirPuerta, 900);
 /* Al cerrar la pestaña o mandarla al fondo no se espera al temporizador:
    se escribe de una, que es justo cuando el navegador puede descartarla. */
 window.addEventListener("pagehide", guardarYa);
-document.addEventListener("visibilitychange", () => { if(document.hidden) guardarYa(); });
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden){ guardarYa(); return; }
+  /* Al volver a la pantalla, lo primero es ponerse al día: puede que
+     en el otro mostrador hayan pasado cosas. */
+  if(LLAVE_API && D.enLinea && S.estado !== "revisar"){ S.espera = CADA; programar(800); }
+});
 
 /* La banda de abajo dice si hay internet: ahora lo dice el navegador,
    que el interruptor de mentira ya no está. */
@@ -5081,5 +5670,8 @@ document.addEventListener("visibilitychange", () => { if(document.hidden) guarda
   const antes = D.enLinea;
   D.enLinea = navigator.onLine !== false;
   if(antes !== D.enLinea) render();
+  /* Volvió la red: lo pendiente sale ya, sin esperar el turno ni
+     arrastrar la espera larga que dejó el último fallo. */
+  if(D.enLinea && LLAVE_API && S.estado !== "revisar"){ S.espera = CADA; programar(1000); }
 }));
 </script>
