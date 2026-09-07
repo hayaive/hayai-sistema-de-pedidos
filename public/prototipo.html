@@ -4136,7 +4136,16 @@ const ACCIONES = {
   },
 
   /* Cobrar */
-  cobroPago(ds){ D.cobro.pago = ds.id; render(); },
+  cobroPago(ds){
+    /* "Recibe" es un monto en la moneda de la forma elegida: si se
+       cambia entre Bs y divisa hay que convertirlo, si no el número
+       se queda igual pero ahora se lee en otra moneda y sale disparado. */
+    const eraUsd = D.cobro.pago === "efectivo_usd", seraUsd = ds.id === "efectivo_usd";
+    if(eraUsd !== seraUsd)
+      D.cobro.recibe = round2(seraUsd ? D.cobro.recibe / D.tasas.oficial : D.cobro.recibe * D.tasas.oficial);
+    D.cobro.pago = ds.id;
+    render();
+  },
   cobroRecibe(ds, el){ D.cobro.recibe = aNumero(el.value); D.foco = el.id; render(); },
   cobroMonto(ds){
     const enUsd = D.cobro.pago === "efectivo_usd";
