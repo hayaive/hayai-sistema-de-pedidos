@@ -745,9 +745,7 @@ body{overflow-x:hidden;background:var(--papel)}
 .card-nav:active{background:var(--sup-3);transform:translateY(1px)}
 .card-nav:focus-visible{outline:none;box-shadow:var(--foco)}
 .card-nav[disabled],.card-nav.es-off{opacity:.42;pointer-events:none}
-/* El botón ocupa toda la celda del grid (buen target táctil), pero el
-   badge del atajo va anclado al pocillo del icono —no al botón entero—,
-   si no queda flotando lejos del icono en celdas anchas. */
+/* El botón ocupa toda la celda del grid: buen target táctil. */
 .card-nav__ic{position:relative;display:flex;align-items:center;justify-content:center;width:4.5rem;height:4.5rem;
   border-radius:var(--r2);color:var(--sol-70);background:var(--sol-vela);
   transition:background .14s,color .14s}
@@ -765,7 +763,16 @@ body{overflow-x:hidden;background:var(--papel)}
    su tarjeta sea más alta que la de "Venta". */
 .card-nav__n{font-size:.95rem;font-weight:650;letter-spacing:0;line-height:1.25;
   min-height:2.4rem;display:flex;align-items:center;justify-content:center}
-.card-nav__tecla{position:absolute;top:-.3rem;right:-.3rem;pointer-events:none}
+/* El número es un atajo de teclado, no un contador. Pegado al icono y
+   en ámbar se leía como «hay 5 clientes», así que baja al pie de la
+   tarjeta, en gris y con la palabra «tecla» delante. El renglón se
+   reserva aunque la pantalla no tenga atajo, para que los iconos de
+   una misma fila queden a la misma altura. En aparatos sin teclado
+   —teléfono, tableta— no se enseña: ahí no sirve de nada. */
+.card-nav__pista{display:flex;align-items:center;justify-content:center;gap:.35rem;
+  min-height:1.35rem;margin-top:-.25rem;font-size:.75rem;color:var(--texto-3)}
+.card-nav__pista .tecla{min-width:1.35rem;height:1.35rem;padding:0 .3rem;font-size:.7rem}
+@media (hover:none) and (pointer:coarse){.card-nav__pista{display:none}}
 
 /* La salida, siempre en el mismo sitio y siempre a la vista */
 .volver-menu{position:fixed;left:50%;transform:translateX(-50%);bottom:4.1rem;z-index:27;
@@ -1748,7 +1755,7 @@ const PANTALLAS = {
       { q:"cifras",
         t: franjaDelDia(new Date().getHours()) === "noche" ? "Cómo nos fue hoy" : "Cómo está yendo hoy",
         d:"Cuánto se vendió, cuánto es en dólares, cuántos cobros van y cuánto falta por cobrar. Los cuatro salen solos de las ventas del día: nadie los escribe a mano y nadie los puede cambiar." },
-      { q:"menu",   t:"Las tarjetas del sistema", d:"Cada tarjeta es una pantalla: se reconoce por su icono y su nombre. Debajo va lo que hay pendiente ahí mismo —«4 por cobrar», «4 bajo el mínimo»— y a la derecha la tecla que lleva a esa pantalla. De un vistazo se sabe adónde hay que entrar." },
+      { q:"menu",   t:"Las tarjetas del sistema", d:"Cada tarjeta es una pantalla y se reconoce por su icono y su nombre. En la computadora, al pie de la tarjeta dice qué tecla lleva ahí sin soltar el teclado; en el teléfono no aparece, porque no hace falta." },
       { q:"accion", t:"Las dos de todos los días", d:"«Venta de mostrador» es para el que llega, compra y se lo lleva: se arma el ticket, se cobra y se imprime ahí mismo. «Montar pedido» es para lo que se encarga hoy y se retira otro día: queda a nombre de alguien, con su abono, su fecha de retiro y la existencia ya apartada." },
       { q:"banda",  t:"La banda de abajo", d:"La tasa del día, desde cuándo está abierta la caja y si hay internet. Toca la tasa y se abre la calculadora." },
       { q:"logo",   t:"Para volver, el logo", d:"Estés donde estés, tocando el logo vuelves a este menú. También sirve el botón de abajo." }
@@ -1913,9 +1920,10 @@ function logoImg(alto){
 function tarjetaNav(k){
   const p = PANTALLAS[k];
   return '<button class="card-nav" data-a="ir" data-p="' + k + '">' +
-    '<span class="card-nav__ic">' + ic(p.ic, "ic--" + p.ic) +
-      (p.tecla ? '<span class="tecla card-nav__tecla">' + p.tecla + "</span>" : "") + "</span>" +
-    '<span class="card-nav__n">' + p.n + "</span></button>";
+    '<span class="card-nav__ic">' + ic(p.ic, "ic--" + p.ic) + "</span>" +
+    '<span class="card-nav__n">' + p.n + "</span>" +
+    '<span class="card-nav__pista">' +
+      (p.tecla ? 'tecla <span class="tecla">' + p.tecla + "</span>" : "") + "</span></button>";
 }
 
 /* Las tres filas no son decoración: separan lo que se hace todo el rato
@@ -3589,6 +3597,7 @@ function ventActualizar(){
 
 /* ── Acerca del sistema ────────────────────────────────────────── */
 const CAMBIOS = [
+  { v:"1.0.5", f:"07/09/2026", t:"En el menú, el número de cada tarjeta bajó al pie y dice «tecla»: es el atajo del teclado, no una cuenta de pendientes." },
   { v:"1.0.5", f:"06/09/2026", t:"El negocio pone su propio logotipo, y el sistema se puede cambiar a verde, azul y seis colores más." },
   { v:"1.0.5", f:"06/09/2026", t:"Ajustes es una lista como la del teléfono: se toca lo que se quiere cambiar y se abre solo eso." },
   { v:"1.0.5", f:"06/09/2026", t:"Ajustes se quedó con lo que de verdad se toca, y la letra tiene un solo tamaño para todos los aparatos." },
