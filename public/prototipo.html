@@ -102,7 +102,7 @@
   --sombra-3:0 30px 70px -18px rgba(0,0,0,.8), 0 4px 12px rgba(0,0,0,.5);
 }
 
-/* Tamaño de letra por dispositivo — el ajuste real de la pantalla Ajustes */
+/* Tamaño de letra — uno solo, el de la pantalla Ajustes */
 html{font-size:15px}
 html[data-tam="compacto"]{font-size:13.5px}
 html[data-tam="grande"]{font-size:17px}
@@ -1119,14 +1119,14 @@ const D = {
   usuario: null,
   entradaHora: 0,
   pantalla: "inicio",
-  enLinea: true,
+  enLinea: typeof navigator !== "undefined" && navigator.onLine !== false,
   ventana: null,
   tour: null,        // índice del paso de la sesión guiada
   pwa: { instalable:false, instalada:false, sw:null,
          nueva:false, versionNueva:"", buscando:false, recargando:false,
          puesta:false, abriendo:false, noAbrio:false, puertaVista:false },
   foco: null,
-  q: { venta:"", pedidos:"", inventario:"", clientes:"", bitacora:"" },
+  q: { venta:"", pedidos:"", inventario:"", clientes:"" },
   filtro: { pedidos:"todos", inventario:"todas" },
   venta: [],          // { prodId, cant }
   ventaPagos: [],
@@ -1155,10 +1155,10 @@ const D = {
   guardadoFallo: "",        // por qué no se pudo, si es que no se pudo
 
   /* Arranca en claro a propósito: el mostrador se ve de día y con luz
-     encima. Quien quiera noche lo cambia en Ajustes o con el botón de
-     arriba, y ahí sí se queda como lo dejó. */
+     encima. Quien quiera noche lo cambia con el botón de arriba, al lado
+     de su nombre, y ahí sí se queda como lo dejó. */
   ajustes: { tema: "light", tasaPref: "oficial", moneda: "bs", efectivo: true,
-             letraPc: "mediana", letraTel: "pequena" },
+             letra: "mediana" },
 
   usuarios: [
     { id:1, nombre:"Yorbin Rojas", usuario:"yorbin", clave:"1234", rol:"cajero",   iniciales:"YR" },
@@ -1521,7 +1521,13 @@ function cargar(){
     if(g.pedidos)   D.pedidos   = g.pedidos.map(p => Object.assign({}, p, { retiro: aFecha(p.retiro) }));
     if(g.documentos)D.documentos= g.documentos.map(d => Object.assign({}, d, { hora: aFecha(d.hora) }));
     if(g.bitacora)  D.bitacora  = g.bitacora.map(b => Object.assign({}, b, { hora: aFecha(b.hora) }));
-    if(g.ajustes)   D.ajustes   = Object.assign({}, D.ajustes, g.ajustes);
+    if(g.ajustes){
+      D.ajustes = Object.assign({}, D.ajustes, g.ajustes);
+      /* Antes había un tamaño para computadora y otro para teléfono:
+         de lo viejo se hereda el de computadora y se olvida el resto. */
+      if(!g.ajustes.letra && g.ajustes.letraPc) D.ajustes.letra = g.ajustes.letraPc;
+      delete D.ajustes.letraPc; delete D.ajustes.letraTel;
+    }
     if(g.tasas)     D.tasas     = Object.assign({}, D.tasas, g.tasas);
     D.tasaFecha     = aFecha(g.tasaFecha);
     if(g.tasaEstado)D.tasaEstado= g.tasaEstado;
@@ -1728,13 +1734,11 @@ const PANTALLAS = {
     ]},
 
   ajustes: { n:"Ajustes", ic:"ajustes", tecla:"",
-    voz:"Cómo se cobra, de qué tamaño se ve y qué ha hecho cada quien",
+    voz:"Cómo se cobra y de qué tamaño se ve",
     guia:[
       { q:"tasa",     t:"La tasa que se lee", d:"Escoger aquí cambia el equivalente que aparece en pantalla, no lo que se cobra. El cobro siempre se convierte con la tasa oficial." },
       { q:"fuente",   t:"De dónde sale la tasa", d:"Se trae sola del BCV al abrir y cada media hora. Si la fuente no contesta se queda la última conocida y aquí lo dice; siempre puedes escribirla a mano." },
-      { q:"tema",     t:"Claro o noche", d:"La panadería abre antes del amanecer. De noche, la pantalla en claro encandila; con Noche descansa la vista y el ámbar se sigue viendo igual. También hay un conmutador rápido arriba, al lado de tu nombre." },
-      { q:"letra",    t:"El tamaño de la letra", d:"Se guarda por separado para computadora y para teléfono, y cambia al instante. La tableta del mostrador suele ir en Grande." },
-      { q:"bitacora", t:"Quién hizo qué", d:"Cada venta, cobro, anulación o movimiento de inventario queda con nombre y hora. Se filtra por persona." }
+      { q:"letra",    t:"El tamaño de la letra", d:"Uno solo para todos los aparatos, y cambia al instante. La tableta del mostrador suele ir en Grande. Claro o noche se cambia arriba, al lado de tu nombre." }
     ]},
 
   usuarios: { n:"Usuarios", ic:"candado", tecla:"",
@@ -2514,11 +2518,12 @@ function vistaAjustes(){
     "><span><b>" + t[1] + '</b> <span class="tenue">— ' + tasaTexto(t[0]) +
     (hayTasa(t[0]) ? " Bs" : ", escríbela abajo") + "</span></span></label>").join("");
 
-  const letra = (cual, valor) => [["pequena","Pequeña"],["mediana","Mediana"],["grande","Grande"]].map(t =>
-    '<button aria-pressed="' + (valor === t[0]) + '" data-a="letra" data-cual="' + cual + '" data-v="' + t[0] + '" style="flex:1">' + t[1] + "</button>").join("");
-
-  const personas = ["todas", ...new Set(D.bitacora.map(b => b.usuario))];
-  const bit = D.bitacora.filter(b => D.q.bitacora === "" || D.q.bitacora === "todas" || b.usuario === D.q.bitacora);
+  const letraOp = [["pequena","Pequeña","la que más cabe en pantalla"],
+                   ["mediana","Mediana","la de siempre"],
+                   ["grande","Grande","se lee de lejos, como en la tableta del mostrador"]].map(t =>
+    '<label class="marca-op"><input type="radio" name="letra" data-a="letra" data-v="' + t[0] + '"' +
+    (a.letra === t[0] ? " checked" : "") + "><span><b>" + t[1] + '</b> <span class="tenue">— ' + t[2] +
+    "</span></span></label>").join("");
 
   return '<div class="dos"><div class="col">' +
       '<div class="tarj" data-tour="tasa"><div class="tarj__cab">' + ic("tasa","ambar") + "<h4>Tasa predeterminada</h4></div>" +
@@ -2558,17 +2563,6 @@ function vistaAjustes(){
         m[1] + "</button>").join("") + "</div>" +
       '<p class="nota-pie" style="margin-top:.6rem">Cuál de las dos cifras va de primera en Inicio y en el cierre. ' +
       "El cobro no cambia: siempre se convierte con la tasa oficial y el documento guarda la suya.</p></div>" +
-
-      '<div class="tarj"><div class="tarj__cab">' + ic("billete","ambar") + "<h4>Cobro en efectivo</h4></div>" +
-      '<label class="palanca"><input type="checkbox" data-a="efectivo"' + (a.efectivo ? " checked" : "") + ">Aceptar efectivo</label>" +
-      '<p class="nota-pie" style="margin-top:.5rem">' + (a.efectivo
-        ? "Efectivo en bolívares y en divisa aparecen como formas de pago en Venta y en Cobrar."
-        : "Apagado: las formas de pago en efectivo desaparecieron de todas las pantallas de cobro, no solo de una.") + "</p></div>" +
-
-      '<div class="tarj"><div class="tarj__cab">' + ic("candado","ambar") + "<h4>Quién entra</h4>" +
-      '<span class="chip chip--liso chip--xs chip--hueco">' + plural(D.usuarios.length, "usuario", "usuarios") + "</span></div>" +
-      '<p class="min tenue">Quién entra al sistema, con qué usuario entra cada quien y qué puede hacer ahora tiene su propia pantalla.</p>' +
-      '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ir" data-p="usuarios">' + ic("gente") + "Ir a Usuarios</button></div></div>" +
 
       (D.usuario && D.usuario.rol === "duena" ?
       '<div class="tarj"><div class="tarj__cab">' + ic("billete","ambar") + "<h4>Tipos de precio</h4>" +
@@ -2616,52 +2610,28 @@ function vistaAjustes(){
           (D.pwa.buscando ? '<span class="girador"></span>' : ic("refrescar")) + "Buscar actualización</button>") +
       "</div></div>" +
 
-      '<div class="tarj" data-tour="tema"><div class="tarj__cab">' + ic("luna","ambar") + "<h4>Claro o noche</h4></div>" +
-      '<div class="alt ancho">' + [["auto","Como el aparato"],["light","Claro"],["dark","Noche"]].map(t =>
-        '<button aria-pressed="' + (a.tema === t[0]) + '" data-a="temaFijo" data-v="' + t[0] + '" style="flex:1">' + t[1] + "</button>").join("") + "</div>" +
-      '<p class="nota-pie" style="margin-top:.6rem">La panadería abre antes del amanecer y cierra de noche: con la pantalla en claro a esa hora se encandila. ' +
-      "Con <b>Como el aparato</b> sigue lo que tenga puesto el teléfono o la computadora.</p></div>" +
-
       '<div class="tarj" data-tour="letra"><div class="tarj__cab">' + ic("documento","ambar") + "<h4>Tamaño de la letra</h4></div>" +
-      '<p class="rot" style="margin-bottom:.35rem">EN COMPUTADORA</p><div class="alt ancho">' + letra("letraPc", a.letraPc) + "</div>" +
-      '<p class="rot" style="margin:.8rem 0 .35rem">EN TELÉFONO</p><div class="alt ancho">' + letra("letraTel", a.letraTel) + "</div>" +
-      '<div style="border:1px solid var(--linea);border-radius:var(--r2);padding:.8rem;margin-top:.8rem">' +
-        '<p class="rot" style="margin-bottom:.35rem">ASÍ SE VE AHORA MISMO</p>' +
-        '<p style="font-weight:600">Pan canilla</p><p class="cifra cifra--md">' + bs(45) + "</p>" +
-        '<button class="btn btn--sol btn--sm" style="margin-top:.5rem" data-a="nada">Cobrar</button></div>' +
-      '<p class="nota-pie" style="margin-top:.6rem">Se guarda por separado. En teléfono arranca en pequeña, porque la pantalla es la mitad de ancha.</p></div>' +
+      '<div class="col" style="gap:.5rem">' + letraOp + "</div>" +
+      '<p class="nota-pie" style="margin-top:.6rem">Vale igual en computadora, en tableta y en teléfono, y cambia al instante. ' +
+      "Se guarda en este aparato: otro puede tener el suyo en otro tamaño.</p></div>" +
 
-      '<div class="tarj"><div class="tarj__cab">' + ic("caja","ambar") + "<h4>Dónde se guarda</h4>" +
-      (D.guardadoFallo
-        ? '<span class="chip chip--rojo chip--xs">No se está guardando</span>'
-        : '<span class="chip chip--verde chip--xs">Guardado</span>') + "</div>" +
-      '<p class="min tenue">Todo lo del mostrador —ventas, pedidos, inventario, clientes, usuarios y estos ajustes— ' +
-      "se guarda en este mismo aparato. No hace falta internet ni servidor: cierras el navegador, vuelves a abrir y está donde lo dejaste.</p>" +
-      '<p class="nota-pie" style="margin-top:.6rem">' +
-        (D.guardadoFallo
-          ? '<span class="rojo">El navegador no acepta más datos (' + esc(D.guardadoFallo) + "). Exporta el día antes de seguir.</span>"
-          : (D.guardado ? "Última vez, " + fechaHora(D.guardado) + "." : "Todavía no se ha guardado nada.")) +
-      " Como vive aquí y no en la nube, otro aparato tiene sus propios datos, y borrar los del navegador se los lleva.</p>" +
+      '<div class="tarj"><div class="tarj__cab">' + ic("billete","ambar") + "<h4>Cobro en efectivo</h4></div>" +
+      '<label class="palanca"><input type="checkbox" data-a="efectivo"' + (a.efectivo ? " checked" : "") + ">Aceptar efectivo</label>" +
+      '<p class="nota-pie" style="margin-top:.5rem">' + (a.efectivo
+        ? "Efectivo en bolívares y en divisa aparecen como formas de pago en Venta y en Cobrar."
+        : "Apagado: las formas de pago en efectivo desaparecieron de todas las pantallas de cobro, no solo de una.") + "</p></div>" +
+
+      /* Limpiar datos solo la ve la cuenta de recuperación: para el
+         mostrador estos botones no existen. */
       (esRecuperacion()
-        ? '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
+        ? '<div class="tarj"><div class="tarj__cab">' + ic("papelera","ambar") + "<h4>Limpiar datos</h4>" +
+          '<span class="chip chip--liso chip--xs chip--hueco">Solo recuperación</span></div>' +
+          '<p class="min tenue">Lo del mostrador vive en este mismo aparato. Esto lo borra de aquí y no se puede deshacer.</p>' +
+          '<div class="tarj__pie"><button class="btn btn--contorno" data-a="ventana" data-v="limpiarVentas">' +
             ic("papelera") + "Borrar ventas, cierre y pedidos de prueba</button>" +
           '<button class="btn btn--contorno" data-a="ventana" data-v="empezarCero">' +
-            ic("papelera") + "Empezar de cero</button></div>"
-        : "") + "</div>" +
-
-      '<div class="tarj"><div class="tarj__cab">' + ic("sinred","ambar") + "<h4>Conexión</h4></div>" +
-      '<label class="palanca"><input type="checkbox" data-a="conexion"' + (D.enLinea ? "" : " checked") + ">Simular que se cayó el internet</label>" +
-      '<p class="nota-pie" style="margin-top:.5rem">Sin conexión el sistema sigue tomando pedidos y lo dice en la banda de abajo. Al volver, sincroniza.</p></div>' +
-
-      '<div class="tarj" data-tour="bitacora"><div class="tarj__cab">' + ic("reloj","ambar") + "<h4>Bitácora</h4>" +
-      '<select class="ent" style="width:auto;height:2rem;font-size:.82rem" data-a="filtroBitacora">' +
-        personas.map(p => '<option value="' + esc(p) + '"' + (D.q.bitacora === p ? " selected" : "") + ">" +
-          (p === "todas" ? "Todas las personas" : esc(p)) + "</option>").join("") + "</select></div>" +
-      '<div class="bitacora scroll-y">' + (bit.length ? bit.map((b, i) =>
-        '<div class="bit"><span class="bit__p' + (i === 0 ? " es-sol" : "") + '"></span><div class="bit__c">' +
-        '<p class="bit__t"><b>' + esc(b.usuario.split(" ")[0]) + "</b> " + esc(b.texto) + "</p>" +
-        '<p class="bit__h">' + fechaHora(b.hora) + "</p></div></div>").join("")
-        : '<p class="min tenue">Nadie ha hecho nada todavía.</p>') + "</div></div>" +
+            ic("papelera") + "Empezar de cero</button></div></div>"
+        : "") +
     "</div></div>";
 }
 
@@ -2716,7 +2686,7 @@ function vistaUsuarios(){
       '<p class="min tenue">En la pantalla de entrada se escriben las dos cosas: el usuario ' +
       "—el nombre corto que aparece debajo de cada persona— y la contraseña. " +
       'Las que se agregan aquí arrancan con <b style="font-family:var(--mono)">1234</b>.</p>' +
-      '<p class="nota-pie" style="margin-top:.6rem">Quién hizo qué, y a qué hora, se lee en Ajustes: la bitácora guarda cada venta, cobro, anulación y movimiento de inventario.</p></div>' +
+      '<p class="nota-pie" style="margin-top:.6rem">Todo lo que haga cada quien —venta, cobro, anulación, movimiento de inventario— queda firmado con su nombre y su hora.</p></div>' +
     "</div></div>";
 }
 
@@ -3387,6 +3357,7 @@ function ventActualizar(){
 
 /* ── Acerca del sistema ────────────────────────────────────────── */
 const CAMBIOS = [
+  { v:"1.0.5", f:"06/09/2026", t:"Ajustes se quedó con lo que de verdad se toca, y la letra tiene un solo tamaño para todos los aparatos." },
   { v:"1.0.5", f:"06/09/2026", t:"Todo queda guardado en el aparato: se cierra el navegador y al volver está donde quedó." },
   { v:"1.0.5", f:"06/09/2026", t:"Cada rol entra solo a sus pantallas, y la dueña reparte los permisos uno por uno." },
   { v:"1.0.5", f:"06/09/2026", t:"La entrada ya no dice con qué usuario probar: quien entra, sabe lo suyo." },
@@ -3788,9 +3759,7 @@ function aplicarTema(){
   if(m) m.setAttribute("content", temaEfectivo() === "dark" ? "#16110B" : "#FFFFFF");
 }
 function aplicarLetra(){
-  const tel = window.matchMedia("(max-width: 820px)").matches;
-  const v = tel ? D.ajustes.letraTel : D.ajustes.letraPc;
-  const t = { pequena:"compacto", mediana:"", grande:"grande" }[v];
+  const t = { pequena:"compacto", mediana:"", grande:"grande" }[D.ajustes.letra];
   if(t) document.documentElement.setAttribute("data-tam", t);
   else document.documentElement.removeAttribute("data-tam");
 }
@@ -4449,13 +4418,12 @@ const ACCIONES = {
     avisar(el.checked ? "Efectivo encendido" : "Efectivo apagado",
       el.checked ? "Vuelve a aparecer en todas las pantallas de cobro." : "Desapareció de Venta y de Cobrar, no solo de una.");
   },
-  letra(ds){ D.ajustes[ds.cual] = ds.v; render(); },
+  letra(ds){ D.ajustes.letra = ds.v; render(); },
   tema(){
     D.ajustes.tema = temaEfectivo() === "dark" ? "light" : "dark";
     render();
     avisar(D.ajustes.tema === "dark" ? "Modo noche" : "Modo claro", "Queda así en este dispositivo.");
   },
-  temaFijo(ds){ D.ajustes.tema = ds.v; render(); },
   moneda(ds){
     D.ajustes.moneda = ds.v;
     render();
@@ -4502,12 +4470,6 @@ const ACCIONES = {
     if(p.userChoice) p.userChoice.then(() => render());
     else render();
   },
-  conexion(ds, el){
-    D.enLinea = !el.checked; render();
-    avisar(D.enLinea ? "Volvió la conexión" : "Sin conexión",
-      D.enLinea ? "Lo que quedó pendiente ya se envió." : "Sigue cobrando y montando pedidos: todo se guarda aquí.");
-  },
-  filtroBitacora(ds, el){ D.q.bitacora = el.value; render(); },
   rol(ds){
     const u = D.usuarios.find(x => x.id === Number(ds.id));
     const orden = Object.keys(ROLES);
@@ -4632,7 +4594,7 @@ const ACCION_MODULO = {
 
   rol:"usuarios", guardarUsuario:"usuarios", permiso:"usuarios",
 
-  guardarTasas:"ajustes", tasaPref:"ajustes", efectivo:"ajustes", moneda:"ajustes", conexion:"ajustes",
+  guardarTasas:"ajustes", tasaPref:"ajustes", efectivo:"ajustes", moneda:"ajustes",
   confirmarLimpiarVentas:"ajustes",
   guardarTipoPrecio:"ajustes", borrarTipoPrecio:"ajustes"
 };
@@ -4769,4 +4731,12 @@ setTimeout(abrirPuerta, 900);
    se escribe de una, que es justo cuando el navegador puede descartarla. */
 window.addEventListener("pagehide", guardarYa);
 document.addEventListener("visibilitychange", () => { if(document.hidden) guardarYa(); });
+
+/* La banda de abajo dice si hay internet: ahora lo dice el navegador,
+   que el interruptor de mentira ya no está. */
+["online","offline"].forEach(ev => window.addEventListener(ev, () => {
+  const antes = D.enLinea;
+  D.enLinea = navigator.onLine !== false;
+  if(antes !== D.enLinea) render();
+}));
 </script>
